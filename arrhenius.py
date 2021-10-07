@@ -13,11 +13,11 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Generate the artificial data
 ode = ODE()
-T = [750, 800, 850, 900]
+T = [900]
 A = 5
 E = 500
 dt = 0.0001
-tf = [0.1, 0.2, 0.3, 0.4]
+tf = [0, 0.1, 0.2, 0.3, 0.4]
 y0 = 1
 # x1 : Temperature
 # x2 : Reaction time
@@ -49,27 +49,27 @@ yA = scaler_yA.transform(yA)
 # PINN
 Temperature = sn.Variable("T")
 Reaction_Time = sn.Variable("tf")
-cB = sn.Functional("cB", [Temperature, Reaction_Time], 8*[20], activation="tanh")
+cA = sn.Functional("cA", [Temperature, Reaction_Time], 8*[20], activation="tanh")
 # Parameters to predict
 E_const = sn.Parameter(0.0, inputs=[Temperature, Reaction_Time])
 A_const = sn.Parameter(1.0, inputs=[Temperature, Reaction_Time])
 k = A_const*sn.utils.exp(-E_const*Temperature)
 # ODEs
-L1 = sn.math.diff(cB, Reaction_Time) - k*cB
-L2 = cB
+L1 = sn.math.diff(cA, Reaction_Time) + k*cA
+L2 = cA
 # Model
 m = sn.SciModel([Temperature, Reaction_Time],
                 [L1, L2], optimizer="adagrad")
 # Train
 m.train([np.array(x1), np.array(x2)],
-        ["zeros", np.array(yB)],
-        epochs=10000,
+        ["zeros", np.array(yA)],
+        epochs=5000,
         learning_rate=0.1)
 # Predict
-y_pred = cB.eval(m, [np.array(x1), np.array(x2)])
+y_pred = cA.eval(m, [np.array(x1), np.array(x2)])
 # Visualization
 a = plt.axes(aspect='equal')
-plt.scatter(scaler_yB.inverse_transform(yB), scaler_yB.inverse_transform(y_pred))
+plt.scatter(scaler_yA.inverse_transform(yA), scaler_yA.inverse_transform(y_pred))
 plt.xlabel('True Values')
 plt.ylabel('Predictions')
 lims = [0, 1]
@@ -77,4 +77,4 @@ plt.xlim(lims)
 plt.ylim(lims)
 plt.plot(lims, lims)
 plt.show()
-print(r2_score(scaler_yB.inverse_transform(yB), scaler_yB.inverse_transform(y_pred)))
+print(r2_score(scaler_yA.inverse_transform(yA), scaler_yA.inverse_transform(y_pred)))
