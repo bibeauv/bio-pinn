@@ -1,20 +1,21 @@
-# ODE
+# Classes
 import sys
 import os
 sys.path.append(os.getcwd() + '\source')
 from source.ode import ODE
+from source.preprocess import Normalization
 # PINN
 import sciann as sn
+# Other
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
-from sklearn.preprocessing import MinMaxScaler
 
 # Generate the artificial data
 ode = ODE()
-T = [750, 800, 850, 900]
+T = [1000, 1500, 2000]
 A = 5
-E = 500
+E = 1000
 dt = 0.0001
 tf = [0, 0.1, 0.2, 0.3, 0.4]
 y0 = 1
@@ -23,18 +24,10 @@ y0 = 1
 yB, x1, x2 = ode.euler_explicite(T, A, E, dt, tf, y0)
     
 # Normalization
-x1 = np.reshape(x1, (-1,1))
-x2 = np.reshape(x2, (-1,1))
-yB = np.reshape(yB, (-1,1))
-scaler_x1 = MinMaxScaler()
-scaler_x2 = MinMaxScaler()
-scaler_yB = MinMaxScaler()
-scaler_x1.fit(x1)
-scaler_x2.fit(x2)
-scaler_yB.fit(yB)
-x1 = scaler_x1.transform(x1)
-x2 = scaler_x2.transform(x2)
-yB = scaler_yB.transform(yB)
+scaler = Normalization()
+x1, scaler_x1 = scaler.minmax(x1)
+x2, scaler_x2 = scaler.minmax(x2)
+yB, scaler_yB = scaler.minmax(yB)
 
 # PINN
 Temperature = sn.Variable("T")

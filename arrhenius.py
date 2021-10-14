@@ -1,69 +1,62 @@
-# ODE
+# Classes
 import sys
 import os
+
+from tensorflow.python.keras import initializers
 sys.path.append(os.getcwd() + '\source')
 from source.ode import ODE
+from source.preprocess import Normalization
 # PINN
 import sciann as sn
+from tensorflow.keras.initializers import GlorotNormal
+# Other
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
-from sklearn.preprocessing import MinMaxScaler
-
 
 # Generate the artificial data
 ode = ODE()
-T = [900]
+T = [1000, 1500, 2000]
 A = 5
-E = 500
+E = 1000
 dt = 0.0001
 tf = [0, 0.1, 0.2, 0.3, 0.4]
 y0 = 1
 # x1 : Temperature
 # x2 : Reaction time
-yB, x1, x2 = ode.euler_explicite(T, A, E, dt, tf, y0)
-yA = []
-for i in range(0, len(yB)):
-    yA.append(y0 - yB[i])
+yA, yB, x1, x2 = ode.euler_explicite(T, A, E, dt, tf, y0)
 for i in range(0, len(x1)):
     x1[i] = pow(x1[i], -1)
 
 # Normalization
-x1 = np.reshape(x1, (-1,1))
-x2 = np.reshape(x2, (-1,1))
-yA = np.reshape(yA, (-1,1))
-yB = np.reshape(yB, (-1,1))
-scaler_x1 = MinMaxScaler()
-scaler_x2 = MinMaxScaler()
-scaler_yB = MinMaxScaler()
-scaler_yA = MinMaxScaler()
-scaler_x1.fit(x1)
-scaler_x2.fit(x2)
-scaler_yB.fit(yB)
-scaler_yA.fit(yA)
-x1 = scaler_x1.transform(x1)
-x2 = scaler_x2.transform(x2)
-yB = scaler_yB.transform(yB)
-yA = scaler_yA.transform(yA)
+scaler = Normalization()
+x1, scaler_x1 = scaler.minmax(x1)
+x2, scaler_x2 = scaler.minmax(x2)
+yA, scaler_yA = scaler.minmax(yA)
+yB, scaler_yB = scaler.minmax(yB)
 
 # PINN
-Temperature = sn.Variable("T")
-Reaction_Time = sn.Variable("tf")
-cA = sn.Functional("cA", [Temperature, Reaction_Time], 8*[20], activation="tanh")
+T = sn.Variable()
+t = sn.Variable()
+cA = sn.Functional("cA", [T, t], 4*[10], activation="tanh", kernel_initializer=GlorotNormal)
 # Parameters to predict
-E_const = sn.Parameter(0.0, inputs=[Temperature, Reaction_Time])
-A_const = sn.Parameter(1.0, inputs=[Temperature, Reaction_Time])
-k = A_const*sn.utils.exp(-E_const*Temperature)
-# ODEs
-L1 = sn.math.diff(cA, Reaction_Time) + k*cA
-L2 = cA
+E_const = sn.Parameter(1.0, inputs=[T, t])
+A_const = sn.Parameter(1.0, inputs=[T, t])
+k = sn.utils.log(A_const) - E_const*T
+# ODE
+L1 = sn.math.diff(cA, t) + sn.utils.exp(k)*cA
+# Initial condition
+TOL = 0.001
+IC = (1-sn.utils.sign(t - TOL)) * (cA - 1)
+# Data
+DATA = cA
 # Model
-m = sn.SciModel([Temperature, Reaction_Time],
-                [L1, L2], optimizer="adagrad")
+m = sn.SciModel([T, t],
+                [L1, IC, DATA], optimizer="adagrad")
 # Train
 m.train([np.array(x1), np.array(x2)],
-        ["zeros", np.array(yA)],
-        epochs=5000,
+        ["zeros", "zeros", np.array(yA)],
+        epochs=10000,
         learning_rate=0.1)
 # Predict
 y_pred = cA.eval(m, [np.array(x1), np.array(x2)])

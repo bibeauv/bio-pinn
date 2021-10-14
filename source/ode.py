@@ -8,7 +8,8 @@ class ODE:
         self.k = 0
         self.CA = 0
         self.CB = 0
-        self.y = []
+        self.yA = []
+        self.yB = []
         self.x1 = []
         self.x2 = []
     
@@ -17,10 +18,11 @@ class ODE:
         self.f2 = -self.k*self.CA
     
     def rate_function(self, T, A, E):
-        R = 8.3145
-        self.k = A*np.exp(-E/R/T)
+        self.k = A*np.exp(-E/T)
     
     def euler_explicite(self, T, A, E, dt, tf, y0):
+        self.yA = []
+        self.yB = []
         for i in range(0, len(T)):
             self.rate_function(T[i], A, E)
             for j in range(0, len(tf)):
@@ -34,5 +36,14 @@ class ODE:
                     t = t + dt
                 self.x1.append(T[i])
                 self.x2.append(tf[j])
-                self.y.append(self.CB)
-        return self.y, self.x1, self.x2
+                self.yA.append(self.CA)
+                self.yB.append(self.CB)
+        return self.yA, self.yB, self.x1, self.x2
+    
+    def analytical_solution(self, T, A, E, tf, y0):
+        self.yA = []
+        for temperature in T:
+            self.rate_function(temperature, A, E)
+            for t in tf:
+                self.yA.append(y0*np.exp(-self.k*t))
+        return self.yA
