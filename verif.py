@@ -42,11 +42,13 @@ m.train([np.array(tf)],
         epochs=5000,
         learning_rate=0.1)
 # Predict
-y_pred = cA.eval(m, [np.array(tf)])
-print(r2_score(y_pred, yA_ana))
+tf_pred = [0.12, 0.24, 0.28, 0.35, 0.5]
+y_pred = cA.eval(m, [np.array(tf_pred)])
+y_true = ode.analytical_solution(T, A, E, tf_pred, y0)
+print(r2_score(y_pred, y_true))
 # Visualization
-plt.plot(tf, yA_ana)
-plt.plot(tf, y_pred, 'o')
+plt.plot(tf_pred, y_true)
+plt.plot(tf_pred, y_pred, 'o')
 plt.legend(['Analytical Solution', 'Predictions'])
 plt.xlabel('Time')
 plt.ylabel('Concentration of A')
