@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.metrics import r2_score
 
 # Generate the artificial data
-ode = ODE()
+ode = ODE(1)
 T = [1000]
 A = 5
 E = 1000

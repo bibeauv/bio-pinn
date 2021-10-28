@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
 # Generate the artificial data
-ode = ODE()
+ode = ODE(1)
 T = [1000, 1500, 2000]
 A = 5
 E = 1000
@@ -21,8 +21,12 @@ tf = [0, 0.1, 0.2, 0.3, 0.4]
 y0 = 1
 # x1 : Temperature
 # x2 : Reaction time
-yB, x1, x2 = ode.euler_explicite(T, A, E, dt, tf, y0)
-    
+y, X = ode.euler_explicite(T, A, E, dt, tf, y0)
+yB = [yB[1] for yB in y]
+yB = np.array(yB).reshape(-1,1)
+x1 = [x1[0] for x1 in X]
+x2 = [x2[1] for x2 in X]
+
 # Normalization
 scaler = Normalization()
 x1, scaler_x1 = scaler.minmax(x1)

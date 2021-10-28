@@ -1,7 +1,6 @@
 # Classes
 import sys
 import os
-
 from tensorflow.python.keras import initializers
 sys.path.append(os.getcwd() + '\source')
 from source.ode import ODE
@@ -15,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
 # Generate the artificial data
-ode = ODE()
+ode = ODE(1)
 T = [1000, 1500, 2000]
 A = 5
 E = 1000
@@ -24,7 +23,11 @@ tf = [0, 0.1, 0.2, 0.3, 0.4]
 y0 = 1
 # x1 : Temperature
 # x2 : Reaction time
-yA, yB, x1, x2 = ode.euler_explicite(T, A, E, dt, tf, y0)
+y, x = ode.euler_explicite(T, A, E, dt, tf, y0)
+yA = [yA[0] for yA in y]
+yB = [yB[1] for yB in y]
+x1 = [x1[0] for x1 in x]
+x2 = [x2[1] for x2 in x]
 for i in range(0, len(x1)):
     x1[i] = pow(x1[i], -1)
 
