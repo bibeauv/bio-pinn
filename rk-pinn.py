@@ -6,6 +6,7 @@ from source.ode import ODE
 from source.preprocess import Normalization
 # PINN
 import sciann as sn
+import tensorflow as tf
 # Other
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,7 +45,7 @@ a = np.array([[0, 0], [0.5, 0.5]])
 k = sn.Parameter(0.0, inputs=[t])
 # ODE
 L1 = (sn.math.add(h[0], a)*dt + x0)
-L2 = (sn.math.add(a.dot(h[1]))*dt + x0)
+L2 = (sn.math.add(h[1], a)*dt + x0)
 # Supervised learning with data
 DATA1 = cA
 # Model
