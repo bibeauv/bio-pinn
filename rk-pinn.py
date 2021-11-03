@@ -6,7 +6,7 @@ from source.ode import ODE
 from source.preprocess import Normalization
 # PINN
 import sciann as sn
-import tensorflow as tf
+import tensorflow
 # Other
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,7 +40,7 @@ for i in range(2):
     a.append([])
     for j in range(2):
         h[-1].append(sn.Functional('h'+str(i)+str(j), [t], 4*[10], activation="tanh"))
-a = np.array([[0, 0], [0.5, 0.5]])
+a = tensorflow.constant([[0, 0], [0.5, 0.5]])
 # Parameters
 k = sn.Parameter(0.0, inputs=[t])
 # ODE
