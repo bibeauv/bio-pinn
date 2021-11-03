@@ -40,12 +40,12 @@ for i in range(2):
     a.append([])
     for j in range(2):
         h[-1].append(sn.Functional('h'+str(i)+str(j), [t], 4*[10], activation="tanh"))
-a = tensorflow.constant([[0, 0], [0.5, 0.5]])
+a = np.array([[0, 0], [0.5, 0.5]])
 # Parameters
 k = sn.Parameter(0.0, inputs=[t])
 # ODE
-L1 = (sn.math.add(h[0], a)*dt + x0)
-L2 = (sn.math.add(h[1], a)*dt + x0)
+L1 = a[0].dot(h[0])*dt + x0
+L2 = a[1].dot(h[1])*dt + x0
 # Supervised learning with data
 DATA1 = cA
 # Model
