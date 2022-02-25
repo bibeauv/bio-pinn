@@ -56,10 +56,10 @@ m = sn.SciModel([t],
                  cC], optimizer="adagrad")
 m.train([x],
         ["zeros", "zeros", "zeros", 
-         (np.arange(0,15).reshape(-1,1), yA[0:15]),
-         (np.arange(0,15).reshape(-1,1), yB[0:15]), 
-         (np.arange(0,15).reshape(-1,1), yC[0:15])],
-        epochs=100000,
+         (np.arange(0,len(x),10).reshape(-1,1), yA[0:len(x):10]),
+         (np.arange(0,len(x),10).reshape(-1,1), yB[0:len(x):10]), 
+         (np.arange(0,len(x),10).reshape(-1,1), yC[0:len(x):10])],
+        epochs=1000,
         batch_size=100,
         learning_rate=0.1)
 # Predict

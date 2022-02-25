@@ -18,6 +18,7 @@ class ODE:
             self.f[0] = self.k[0]*self.C[0]
     
     def rate_function(self, T, A, E):
+        self.k = []
         self.k.append(A*np.exp(-E/T))
         
     def rate(self, k):
@@ -54,6 +55,19 @@ class ODE:
             self.y.append(self.C)
             self.X.append(tf[j])
         return self.y, self.X
+    
+    def euler_explicite_arrhenius(self, T, Ea, A, dt, tf, y0):
+        k1 = A[0] * np.exp(-Ea[0]/T)
+        k2 = A[1] * np.exp(-Ea[1]/T)
+        t = 0
+        self.C = [y0, 0, 0]
+        while t < tf:
+            CA = self.C[0] + dt*-k1*self.C[0]
+            CB = self.C[1] + dt*(k1*self.C[0] - k2*self.C[1])
+            CC = self.C[2] + dt*k2*self.C[1]
+            self.C = [CA, CB, CC]
+            t = t + dt
+        return self.C
     
     def analytical_solution(self, T, A, E, tf, y0):
         self.yA = []
