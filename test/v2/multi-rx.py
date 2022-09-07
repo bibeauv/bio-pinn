@@ -18,7 +18,7 @@ def get_features(y, pos):
     return yi
 
 # Number of collocation points and temperatures
-collocation_points = 100
+collocation_points = 101
 vec_T = [1000, 1500, 1750, 2000]
 
 # Time
