@@ -1,6 +1,7 @@
 import sciann as sn
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class BioPINN():
     
@@ -17,6 +18,7 @@ class BioPINN():
         self.functionals = functionals
         self.parameters = parameters
         self.odes = odes
+        self.evaluations = []
     
     def set_data(self, data_file, mul=2):
         """Function to set X and y from the GC data
@@ -62,13 +64,14 @@ class BioPINN():
         
         list_of_variables = str(self.variables).replace("'","")
         if 't' != self.variables[0]:
-            raise Exception('The first variable should always be the time!')
+            raise Exception("The first variable should always be the time!")
         for v in self.variables:
             exec(f"{v} = sn.Variable()")
         
         list_of_functionals = str(self.functionals).replace("'","")
         for c in self.functionals:
             exec(f"{c} = sn.Functional('{c}', {list_of_variables}, {layers}*[{neurons}], activation='{activation}', kernel_initializer='{initializer}')")
+            exec(f"self.evaluations.append({c})")
         list_of_functionals = list_of_functionals.replace(']',',')
            
         for p in self.parameters:
@@ -94,14 +97,34 @@ class BioPINN():
         
         exec(f"self.m = sn.SciModel({list_of_variables}, {list_of_functionals + list_of_odes}, optimizer='{optimizer}')")
         
-    def start_training(self, epochs=1000, batch_size=10):
+    def start_training(self, epochs=100, batch_size=1):
         
         """Function that trains the PINN
         """
         
         x_true = self.X
-        y_true = len(self.odes)*['zeros'] + self.ids
+        y_true = self.ids + len(self.odes)*['zeros']
         self.m.train(x_true,
                      y_true,
                      epochs=epochs,
                      batch_size=batch_size)
+
+    def generate_graph(self):
+
+        """Generate the graph to show results of predictions
+
+        Raises:
+            Exception: If the PINN model does not exist, thus no graph can be generated
+        """
+
+        if self.m is not None:
+            for i, evaluation in enumerate(self.evaluations):
+                y_pred = evaluation.eval(self.X)
+                plt.plot(self.X[0], y_pred, label=evaluation.name+' pred')
+                plt.plot(self.X[0].flatten()[self.ids[i][0].flatten()], self.y[i], 'o', label=evaluation.name+' true')
+            plt.legend()
+            plt.xlabel('Time [min]')
+            plt.ylabel('Concentration [mol/L]')
+            plt.show()
+        else:
+            raise Exception("Can not generate graph, no PINN model exists!")

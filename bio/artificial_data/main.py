@@ -2,6 +2,8 @@ import sys
 import os
 from biopinn import BioPINN as bp
 
+# 
+
 variables = ['t']
 
 functionals = ['cA', 'cB', 'cC']
@@ -23,5 +25,6 @@ odes = [{'sp':'cA',
 
 pinn = bp(variables, functionals, parameters, odes)
 pinn.set_data('artificial_data.csv')
-pinn.set_model()
-print(pinn.m)
+pinn.set_model(layers=4, neurons=10)
+pinn.start_training(epochs=1000, batch_size=21)
+pinn.generate_graph()
