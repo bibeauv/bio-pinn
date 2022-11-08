@@ -2,6 +2,12 @@ import sciann as sn
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import random
+import numpy as np
+import tensorflow as tf
+random.seed(4)
+np.random.seed(4)
+tf.random.set_seed(4)
 
 class BioPINN():
     
