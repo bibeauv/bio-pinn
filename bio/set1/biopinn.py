@@ -1,9 +1,7 @@
-from tabnanny import verbose
 import sciann as sn
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
 
 class BioPINN():
     
@@ -19,47 +17,82 @@ class BioPINN():
         self.history = None
         self.variables = variables
         self.functionals = functionals
-        self.parameters = parameters
-        self.odes = odes
         self.evaluations_functionals = []
         self.concentrations = {}
+        self.parameters = parameters
         self.evaluations_parameters = []
         self.kinetics = {}
+        self.odes = odes
+        self.evaluations_odes = []
+        self.residuals = {}
+
+    def get_odes(self):
+        
+        """Get odes of model (residuals)
+        """
+        
+        self.residuals = {}
+        for evaluation in self.evaluations_odes:
+            self.residuals[evaluation.name] = evaluation.eval(self.X)
+
+        return self.residuals
     
-    def set_data(self, data_file, norm=False, mul=2):
+    def get_concentrations(self):
+        
+        """Get concentrations of model
+        """
+        
+        self.concentrations = {}
+        for evaluation in self.evaluations_functionals:
+            self.concentrations[evaluation.name] = evaluation.eval(self.X)
+
+        return self.concentrations
+    
+    def get_kinetics(self):
+
+        """Get kinetics of model
+        """
+        
+        self.kinetics = {}
+        for evaluation in self.evaluations_parameters:
+            self.kinetics[evaluation.name] = evaluation.eval(self.X)
+
+        return self.kinetics
+
+    def set_data(self, data_file, mul=2):
         """Function to set X and y from the GC data
 
         Args:
             data_file (string): Name of the file containing the GC results
-            norm(bool, optional): Normalize the data if true
-            mul (int, optional): Multiplicator for collocation points. Defaults to 2.
+            mul (int, optional): Divisor for collocation points. Defaults to 2.
 
         Raises:
             Exception: If the data does not fit the functionals of the PINN set by the user
         """
         
         data = pd.read_csv(data_file)
-        collocation_points = (len(data)-1)*mul+1
+        vec_dt = data['t'].iloc[1:].to_numpy() - data['t'].iloc[:-1].to_numpy()
+        min_dt = min(vec_dt)
+        dt = min_dt/mul
         i = 0
         for col in data.columns:
             if col == 't':
-                self.X = [np.linspace(data['t'].iloc[0],
-                                      data['t'].iloc[-1],
-                                      collocation_points).reshape(-1,1)]
+                self.X = np.array([])
+                for j in range(len(data['t'])-1):
+                    self.X = np.append(self.X, np.arange(data['t'].iloc[j], data['t'].iloc[j+1], dt))
+                self.X = [np.append(self.X, data['t'].iloc[-1]).reshape(-1,1)]
             elif col == self.functionals[i]:
                 self.y.append(data[self.functionals[i]].to_numpy())
                 i += 1
             else:
                 raise Exception("The functionals set for the PINN does not fit the data!")
           
-        for i in range(0,len(self.functionals)):
-            if np.all(self.y[i][1:] == np.zeros(len(self.y[i])-1)):
-                self.ids += [(np.array([[0]]),
-                              self.y[i][0].reshape(-1,1))]
-                self.y[i] = np.array([self.y[i][0]])
-            else:
-                self.ids += [(np.arange(data['t'].iloc[0],collocation_points,mul).reshape(-1,1),
-                              self.y[i].reshape(-1,1))]
+        for i in range(len(self.functionals)):
+            t_bool = np.invert(np.isnan(self.y[i]))
+            t_c = data['t'].to_numpy()[t_bool]
+            self.ids += [(np.argwhere(t_c == self.X[0])[:,0].reshape(-1,1),
+                         self.y[i][t_bool].reshape(-1,1))]
+            self.y[i] = self.y[i][t_bool]
 
     def set_ode(self, exec_ode, ode):
 
@@ -89,11 +122,11 @@ class BioPINN():
         return exec_ode
 
     def set_model(self,
-              layers=1,
-              neurons=1,
-              activation='tanh',
-              initializer='glorot_uniform',
-              optimizer='adam'):
+                  layers=1,
+                  neurons=1,
+                  activation='tanh',
+                  initializer='glorot_uniform',
+                  optimizer='adam'):
         
         """Function to set the model of the PINN
 
@@ -123,9 +156,10 @@ class BioPINN():
             exec_ode = f"L{i} = sn.math.diff({ode['sp']}, t)"
             exec_ode = self.set_ode(exec_ode, ode)
             exec(exec_ode)
+            exec(f"self.evaluations_odes.append(L{i})")
         list_of_odes = str(list_of_odes).replace("'","")
         list_of_odes = list_of_odes.replace('[',' ')
-        
+
         exec(f"self.m = sn.SciModel({list_of_variables}, {list_of_functionals + list_of_odes}, optimizer='{optimizer}')")
         
     def start_training(self, epochs=100, batch_size=1, verbose=1):
@@ -140,28 +174,6 @@ class BioPINN():
                                      epochs=epochs,
                                      batch_size=batch_size,
                                      verbose=verbose)
-
-    def get_concentrations(self):
-        
-        """Get concentrations of model
-        """
-        
-        if len(self.concentrations) == 0:
-            for evaluation in self.evaluations_functionals:
-                self.concentrations[evaluation.name] = evaluation.eval(self.X)
-
-        return self.concentrations
-    
-    def get_kinetics(self):
-
-        """Get kinetics of model
-        """
-        
-        if len(self.kinetics) == 0:
-            for evaluation in self.evaluations_parameters:
-                self.kinetics[evaluation.name] = evaluation.eval(self.X)
-
-        return self.kinetics
 
     def odes_explicite_euler(self, dt):
         
@@ -224,6 +236,7 @@ class BioPINN():
                 plt.plot(self.history.history[l], label=l)
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
+        plt.xscale('log')
         plt.yscale('log')
         plt.legend()
         plt.show()

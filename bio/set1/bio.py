@@ -1,7 +1,4 @@
-import matplotlib.pyplot as plt
-import numpy as np
 from biopinn import BioPINN as bp
-import pandas as pd
 
 # 
 
@@ -9,12 +6,12 @@ variables = ['t']
 
 functionals = ['cB','cTG','cDG','cMG','cG']
 
-parameters = [{'name':'k1', 'initial_value':4.271144},
-              {'name':'k2', 'initial_value':0.4526329},
-              {'name':'k3', 'initial_value':5.070643},
-              {'name':'k4', 'initial_value':1.2533575},
-              {'name':'k5', 'initial_value':6.002198},
-              {'name':'k6', 'initial_value':0.01145097}]
+parameters = [{'name':'k1', 'initial_value':1.0},
+              {'name':'k2', 'initial_value':1.0},
+              {'name':'k3', 'initial_value':1.0},
+              {'name':'k4', 'initial_value':1.0},
+              {'name':'k5', 'initial_value':1.0},
+              {'name':'k6', 'initial_value':1.0}]
 
 odes = [{'sp':'cB',
          'gen':[['k1', 'cTG'],['k3', 'cDG'],['k5', 'cMG']],
@@ -43,8 +40,8 @@ odes = [{'sp':'cB',
 
 pinn = bp(variables, functionals, parameters, odes)
 pinn.set_data('bio.csv', mul=1000)
-pinn.set_model(layers=3, neurons=10, optimizer='adam')
-pinn.start_training(epochs=10000, batch_size=4001)
+pinn.set_model(layers=7, neurons=10)
+pinn.start_training(epochs=100000, batch_size=10001)
 print(pinn.get_kinetics())
 pinn.generate_loss_graph()
 for f in functionals:

@@ -48,12 +48,12 @@ df = {'mul':[],
       'neurons':[],
       'loss':[]}
 
-for mul in [2, 5, 10, 50, 100, 1000]:
-    for optimizer in ['adam', 'adamax', 'adagrad']:
+for mul in [1000]:
+    for optimizer in ['adam']:
         for epochs in [1000]:
-            for layers in  [2, 3, 4, 5, 6]:
-                for neurons in [5, 10, 20, 50, 100]:
-                    batch_size = 2*mul+1
+            for layers in  [5, 6, 7]:
+                for neurons in [5, 10, 20, 50]:
+                    batch_size = 5*mul+1
                     pinn = bp(variables, functionals, parameters, odes)
                     pinn.set_data('bio.csv', mul=mul)
                     pinn.set_model(layers=layers, neurons=neurons, optimizer=optimizer)
