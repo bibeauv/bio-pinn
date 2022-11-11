@@ -45,11 +45,11 @@ odes = [{'sp':'cB',
 fig, ax = plt.subplots()
 
 def animate(i):
-    if i % 2 == 0:
+    if i % 500 == 0:
         pinn = bp(variables, functionals, parameters, odes)
         pinn.set_data('bio.csv', mul=1000)
         pinn.set_model(layers=7, neurons=10)
-        pinn.start_training(epochs=i, batch_size=10000, verbose=0)
+        pinn.start_training(epochs=i, batch_size=10000, verbose=1)
         
         ax.clear()
         concentrations = pinn.get_concentrations()
@@ -65,6 +65,6 @@ def animate(i):
     
         del pinn
         
-ani = animation.FuncAnimation(fig, animate, frames=10, repeat=False)
-writergif = animation.FFMpegWriter(fps=10)
-ani.save('animation.gif', writer=writergif)
+ani = animation.FuncAnimation(fig, animate, frames=10500, interval=1, repeat=False)
+writer = animation.FFMpegWriter(fps=100)
+ani.save('animation.mp4', writer=writer)
