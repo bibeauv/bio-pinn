@@ -10,6 +10,11 @@ torch.set_default_dtype(torch.float)
 torch.manual_seed(1234)
 np.random.seed(1234)
 
+# Params
+LEARNING_RATE = 1e-2
+NEURONS = 10
+ALPHA = 0.9
+
 class subDNN(nn.Module):
     
     def __init__(self):
@@ -17,10 +22,10 @@ class subDNN(nn.Module):
         
         self.activation = nn.Tanh()
         
-        self.f1 = nn.Linear(1, 10)
-        self.f2 = nn.Linear(10, 10)
-        self.f3 = nn.Linear(10, 10)
-        self.out = nn.Linear(10, 1)
+        self.f1 = nn.Linear(1, NEURONS)
+        self.f2 = nn.Linear(NEURONS, NEURONS)
+        self.f3 = nn.Linear(NEURONS, NEURONS)
+        self.out = nn.Linear(NEURONS, 1)
         
     def forward(self, x):
         
@@ -41,7 +46,7 @@ class subDNN(nn.Module):
     
 class cTGNN():
     
-    def __init__(self, device, alpha, f_hat, c_pred, k_pred, t_train, cTG_train):
+    def __init__(self, device, f_hat, c_pred, k_pred, t_train, cTG_train, idx):
         self.dnn = subDNN().to(device)
         self.loss_function = nn.MSELoss(reduction = 'mean')
 
@@ -67,15 +72,17 @@ class cTGNN():
         self.dnn.register_parameter('k6', self.k6)
         
         self.device = device
-        self.alpha = alpha
+        self.alpha = ALPHA
         self.f_hat = f_hat
         self.c_pred = c_pred
         self.k_pred = k_pred
         self.t_train = t_train
         self.cTG_train = cTG_train
+        self.idx = idx
         
+        self.lr = LEARNING_RATE
         self.params = list(self.dnn.parameters())
-        self.optimizer = torch.optim.Adam(self.params, lr=0.001)
+        self.optimizer = torch.optim.Adam(self.params, lr=self.lr)
         
     def pred(self, c_pred, k_pred):
         self.cB = c_pred[:,0].reshape(-1,1)
@@ -95,7 +102,7 @@ class cTGNN():
         grad_cTG = autograd.grad(self.cTG, g, torch.ones(x.shape[0], 1).to(self.device), retain_graph=True, create_graph=True)[0]
         loss_cTG_ode = self.loss_function(grad_cTG + self.k1*self.cTG - self.k2*self.cDG*self.cB, self.f_hat)
         
-        loss_cTG_data = self.loss_function(self.cTG, y)
+        loss_cTG_data = self.loss_function(self.cTG[self.idx], y[self.idx])
         
         loss = self.alpha*loss_cTG_ode + (1-self.alpha)*loss_cTG_data
         
@@ -114,7 +121,7 @@ class cTGNN():
 
 class cDGNN():
     
-    def __init__(self, device, alpha, f_hat, c_pred, k_pred, t_train, cDG_train):
+    def __init__(self, device, f_hat, c_pred, k_pred, t_train, cDG_train, idx):
         self.dnn = subDNN().to(device)
         self.loss_function = nn.MSELoss(reduction = 'mean')
 
@@ -140,15 +147,17 @@ class cDGNN():
         self.dnn.register_parameter('k6', self.k6)
         
         self.device = device
-        self.alpha = alpha
+        self.alpha = ALPHA
         self.f_hat = f_hat
         self.c_pred = c_pred
         self.k_pred = k_pred
         self.t_train = t_train
         self.cDG_train = cDG_train
+        self.idx = idx
         
+        self.lr = LEARNING_RATE
         self.params = list(self.dnn.parameters())
-        self.optimizer = torch.optim.Adam(self.params, lr=0.001)
+        self.optimizer = torch.optim.Adam(self.params, lr=self.lr)
         
     def pred(self, c_pred, k_pred):
         self.cB = c_pred[:,0].reshape(-1,1)
@@ -170,7 +179,7 @@ class cDGNN():
         loss_cDG_ode = self.loss_function(grad_cDG - self.k1*self.cTG + self.k2*self.cDG*self.cB \
                                                    + self.k3*self.cDG - self.k4*self.cMG*self.cB, self.f_hat)
         
-        loss_cDG_data = self.loss_function(self.cDG, y)
+        loss_cDG_data = self.loss_function(self.cDG[self.idx], y[self.idx])
         
         loss = self.alpha*loss_cDG_ode + (1-self.alpha)*loss_cDG_data
         
@@ -189,7 +198,7 @@ class cDGNN():
     
 class cMGNN():
     
-    def __init__(self, device, alpha, f_hat, c_pred, k_pred, t_train, cMG_train):
+    def __init__(self, device, f_hat, c_pred, k_pred, t_train, cMG_train, idx):
         self.dnn = subDNN().to(device)
         self.loss_function = nn.MSELoss(reduction = 'mean')
         
@@ -215,15 +224,17 @@ class cMGNN():
         self.dnn.register_parameter('k6', self.k6)
         
         self.device = device
-        self.alpha = alpha
+        self.alpha = ALPHA
         self.f_hat = f_hat
         self.c_pred = c_pred
         self.k_pred = k_pred
         self.t_train = t_train
         self.cMG_train = cMG_train
+        self.idx = idx
         
+        self.lr = LEARNING_RATE
         self.params = list(self.dnn.parameters())
-        self.optimizer = torch.optim.Adam(self.params, lr=0.001)
+        self.optimizer = torch.optim.Adam(self.params, lr=self.lr)
         
     def pred(self, c_pred, k_pred):
         self.cB = c_pred[:,0].reshape(-1,1)
@@ -245,7 +256,7 @@ class cMGNN():
         loss_cMG_ode = self.loss_function(grad_cMG - self.k3*self.cDG + self.k4*self.cMG*self.cB \
                                                    + self.k5*self.cMG - self.k6*self.cG*self.cB, self.f_hat)
         
-        loss_cMG_data = self.loss_function(self.cMG, y)
+        loss_cMG_data = self.loss_function(self.cMG[self.idx], y[self.idx])
         
         loss = self.alpha*loss_cMG_ode + (1-self.alpha)*loss_cMG_data
         
@@ -264,7 +275,7 @@ class cMGNN():
 
 class cBNN():
     
-    def __init__(self, device, alpha, f_hat, c_pred, k_pred, t_train):
+    def __init__(self, device, f_hat, c_pred, k_pred, t_train):
         self.dnn = subDNN().to(device)
         self.loss_function = nn.MSELoss(reduction = 'mean')
         
@@ -290,14 +301,15 @@ class cBNN():
         self.dnn.register_parameter('k6', self.k6)
         
         self.device = device
-        self.alpha = alpha
+        self.alpha = ALPHA
         self.f_hat = f_hat
         self.c_pred = c_pred
         self.k_pred = k_pred
         self.t_train = t_train
         
+        self.lr = LEARNING_RATE
         self.params = list(self.dnn.parameters())
-        self.optimizer = torch.optim.Adam(self.params, lr=0.001)
+        self.optimizer = torch.optim.Adam(self.params, lr=self.lr)
         
     def pred(self, c_pred, k_pred):
         self.cTG = c_pred[:,1].reshape(-1,1)
@@ -340,7 +352,7 @@ class cBNN():
 
 class cGNN():
     
-    def __init__(self, device, alpha, f_hat, c_pred, k_pred, t_train):
+    def __init__(self, device, f_hat, c_pred, k_pred, t_train):
         self.dnn = subDNN().to(device)
         self.loss_function = nn.MSELoss(reduction = 'mean')
         
@@ -366,14 +378,15 @@ class cGNN():
         self.dnn.register_parameter('k6', self.k6)
         
         self.device = device
-        self.alpha = alpha
+        self.alpha = ALPHA
         self.f_hat = f_hat
         self.c_pred = c_pred
         self.k_pred = k_pred
         self.t_train = t_train
         
+        self.lr = LEARNING_RATE
         self.params = list(self.dnn.parameters())
-        self.optimizer = torch.optim.Adam(self.params, lr=0.001)
+        self.optimizer = torch.optim.Adam(self.params, lr=self.lr)
         
     def pred(self, c_pred, k_pred):
         self.cB = c_pred[:,0].reshape(-1,1)

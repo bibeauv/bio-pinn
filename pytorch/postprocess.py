@@ -1,5 +1,6 @@
 # Importation de librairies
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Set seed
 np.random.seed(1234)
@@ -37,3 +38,54 @@ def euler_explicite(y0, dt, tf, prm):
         y0 = np.copy(y)
     
     return t, mat_y
+
+def plot_loss(mat_loss):
+    
+    plt.plot(mat_loss[:,0], label='loss_cB')
+    plt.plot(mat_loss[:,1], label='loss_cTG')
+    plt.plot(mat_loss[:,2], label='loss_cDG')
+    plt.plot(mat_loss[:,3], label='loss_cMG')
+    plt.plot(mat_loss[:,4], label='loss_cG')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+def plot_pred(t_train, PINNs, idx, t_euler, y_euler, c_train):
+    
+    fig, axs = plt.subplots(2,2)
+
+    # Biodiesel
+    axs[0,0].plot(t_train.detach().numpy(), PINNs[0].dnn(t_train).detach().numpy())
+    axs[0,0].plot(t_euler, y_euler[:,0], '--')
+    axs[0,0].set_title('ME')
+    axs[0,0].set_xlabel('Time [min]')
+    axs[0,0].set_ylabel('Concentration [mol/L]')
+
+    # TG
+    axs[0,1].plot(t_train.detach().numpy(), PINNs[1].dnn(t_train).detach().numpy())
+    axs[0,1].plot(t_train.detach().numpy()[idx], c_train[1][idx], 'o')
+    axs[0,1].plot(t_euler, y_euler[:,1], '--')
+    axs[0,1].set_title('TG')
+    axs[0,1].set_xlabel('Time [min]')
+    axs[0,1].set_ylabel('Concentration [mol/L]')
+
+    # DG
+    axs[1,0].plot(t_train.detach().numpy(), PINNs[2].dnn(t_train).detach().numpy())
+    axs[1,0].plot(t_train.detach().numpy()[idx], c_train[2][idx], 'o')
+    axs[1,0].plot(t_euler, y_euler[:,2], '--')
+    axs[1,0].set_title('DG')
+    axs[1,0].set_xlabel('Time [min]')
+    axs[1,0].set_ylabel('Concentration [mol/L]')
+
+    # MG
+    axs[1,1].plot(t_train.detach().numpy(), PINNs[3].dnn(t_train).detach().numpy())
+    axs[1,1].plot(t_train.detach().numpy()[idx], c_train[3][idx], 'o')
+    axs[1,1].plot(t_euler, y_euler[:,3], '--')
+    axs[1,1].set_title('MG')
+    axs[1,1].set_xlabel('Time [min]')
+    axs[1,1].set_ylabel('Concentration [mol/L]')
+    
+    plt.show()
