@@ -13,7 +13,7 @@ np.random.seed(1234)
 # Params
 LEARNING_RATE = 1e-2
 NEURONS = 10
-ALPHA = 0.9
+ALPHA = 0.5
 
 class subDNN(nn.Module):
     

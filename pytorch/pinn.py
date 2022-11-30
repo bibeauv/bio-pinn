@@ -17,14 +17,14 @@ k_pred = [k1,k2,k3,k4,k5,k6]
 mat_k_pred = np.array([k_pred])
 
 # Read and prepare data
-collocation_points = 100 * 10 + 1
+collocation_points = 100 * 8 + 1
 t_train, \
 cB_train, \
 cTG_train, \
 cDG_train, \
 cMG_train, \
 cG_train, \
-c_pred, idx = read_data('bio.csv', device, 0, 10, collocation_points)
+c_pred, idx = read_data('bio.csv', device, 0, 8, collocation_points)
 c_train = [cB_train, cTG_train, cDG_train, cMG_train, cG_train]
 
 # ODEs residual
@@ -54,7 +54,7 @@ for i, PINN in enumerate(PINNs):
 
 # Training
 epoch = 0
-max_epochs = 100000
+max_epochs = 5000
 while epoch < max_epochs:
     vec_loss = np.zeros((1,5))
     # Backward
@@ -73,17 +73,10 @@ while epoch < max_epochs:
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t cB_loss: {vec_loss[0][0]:.4e} \t cTG_loss: {vec_loss[0][1]:.4e} \t cDG_loss: {vec_loss[0][2]:.4e} \t cMG_loss: {vec_loss[0][3]:.4e} \t cG_loss: {vec_loss[0][4]:.4e}')
 
-    if epoch == 2000:
+    if epoch == 1000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
-        
-    if epoch == 10000:
-        for PINN in PINNs:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
-            
-    if epoch == 50000:
-        for PINN in PINNs:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
+            PINN.alpha = 0.9
 
 print('\n')
 
@@ -102,9 +95,9 @@ for PINN in PINNs:
 print('k_pred: ', k_pred)
 
 # Euler
-y0 = np.array([0,0.540121748,0.057018273,0,0])
+y0 = np.array([0,0.491115698,0.030281241,0,0])
 dt = 0.001
-tf = 10
+tf = 8
 prm = []
 for i in range(1,7):
     prm.append(kinetics[i][-1])
