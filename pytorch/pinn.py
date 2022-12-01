@@ -54,7 +54,7 @@ for i, PINN in enumerate(PINNs):
 
 # Training
 epoch = 0
-max_epochs = 5000
+max_epochs = 20000
 while epoch < max_epochs:
     vec_loss = np.zeros((1,5))
     # Backward
@@ -73,9 +73,18 @@ while epoch < max_epochs:
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t cB_loss: {vec_loss[0][0]:.4e} \t cTG_loss: {vec_loss[0][1]:.4e} \t cDG_loss: {vec_loss[0][2]:.4e} \t cMG_loss: {vec_loss[0][3]:.4e} \t cG_loss: {vec_loss[0][4]:.4e}')
 
-    if epoch == 1000:
+    if epoch == 2000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
+
+    if epoch == 5000:
+        for PINN in PINNs:
+            PINN.optimizer = torch.optim.Adam(PINN.params, lr=0.5e-3)
+            PINN.alpha = 0.7
+
+    if epoch == 10000:
+        for PINN in PINNs:
+            PINN.optimizer = torch.optim.Adam(PINN.params, lr=0.2e-3)
             PINN.alpha = 0.9
 
 print('\n')
