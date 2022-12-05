@@ -34,8 +34,8 @@ f_hat = torch.zeros(t_train.shape[0],1).to(device)
 PINN_cTG = cTGNN(device, f_hat, c_pred, k_pred, t_train, cTG_train, idx)
 PINN_cDG = cDGNN(device, f_hat, c_pred, k_pred, t_train, cDG_train, idx)
 PINN_cMG = cMGNN(device, f_hat, c_pred, k_pred, t_train, cMG_train, idx)
-PINN_cG = cGNN(device, f_hat, c_pred, k_pred, t_train)
-PINN_cB = cBNN(device, f_hat, c_pred, k_pred, t_train)
+PINN_cG = cGNN(device, f_hat, c_pred, k_pred, t_train, cG_train)
+PINN_cB = cBNN(device, f_hat, c_pred, k_pred, t_train, cB_train)
 PINNs = [PINN_cB, PINN_cTG, PINN_cDG, PINN_cMG, PINN_cG]
 
 # Initial predictions
@@ -54,7 +54,7 @@ for i, PINN in enumerate(PINNs):
 
 # Training
 epoch = 0
-max_epochs = 20000
+max_epochs = 10000
 while epoch < max_epochs:
     vec_loss = np.zeros((1,5))
     # Backward
@@ -70,22 +70,13 @@ while epoch < max_epochs:
     mat_k_pred = np.append(mat_k_pred, [k_pred], axis=0)
     
     epoch += 1
+
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t cB_loss: {vec_loss[0][0]:.4e} \t cTG_loss: {vec_loss[0][1]:.4e} \t cDG_loss: {vec_loss[0][2]:.4e} \t cMG_loss: {vec_loss[0][3]:.4e} \t cG_loss: {vec_loss[0][4]:.4e}')
-
-    if epoch == 2000:
+        
+    if epoch == 1000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
-
-    if epoch == 5000:
-        for PINN in PINNs:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=0.5e-3)
-            PINN.alpha = 0.7
-
-    if epoch == 10000:
-        for PINN in PINNs:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=0.2e-3)
-            PINN.alpha = 0.9
 
 print('\n')
 
