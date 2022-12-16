@@ -17,7 +17,7 @@ k_pred = [k1,k2,k3,k4,k5,k6]
 mat_k_pred = np.array([k_pred])
 
 # Read and prepare data
-collocation_points = 100 * 6 + 1
+collocation_points = 100 * 8 + 1
 t_train, \
 cB_train, \
 cTG_train, \
@@ -50,7 +50,7 @@ for i, PINN in enumerate(PINNs):
 
 # Training
 epoch = 0
-max_epochs = 10000
+max_epochs = 50000
 while epoch < max_epochs:
     vec_loss = np.zeros((1,5))
     # Backward
@@ -66,11 +66,11 @@ while epoch < max_epochs:
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t cB_loss: {vec_loss[0][0]:.4e} \t cTG_loss: {vec_loss[0][1]:.4e} \t cDG_loss: {vec_loss[0][2]:.4e} \t cMG_loss: {vec_loss[0][3]:.4e} \t cG_loss: {vec_loss[0][4]:.4e}')
         
-    if epoch == 1000:
+    if epoch == 8000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
 
-    if epoch == 10000:
+    if epoch == 15000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 

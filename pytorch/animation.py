@@ -124,10 +124,6 @@ def make_animation(j):
         title.set_text(f'Epoch: {j}')
 
         epoch += 1
-
-        if epoch == 1000:
-            for PINN in PINNs:
-                PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
         
         print(epoch, end='\r')
 
