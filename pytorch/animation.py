@@ -78,9 +78,6 @@ def make_animation(j):
     while epoch < max_epochs:
         # Backward
         for i, PINN in enumerate(PINNs):
-            if i in [0,4]:
-                train_cNN(PINN, i, c_pred, k_pred, t_train)
-            else:
                 train_cNN(PINN, i, c_pred, k_pred, t_train)
         
         # Kinetics

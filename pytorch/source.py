@@ -13,7 +13,7 @@ np.random.seed(1234)
 # Params
 LEARNING_RATE = 1e-2
 NEURONS = 10
-ALPHA = 0.95
+ALPHA = 0.5
 
 class subDNN(nn.Module):
     
@@ -69,8 +69,7 @@ class cTGNN():
 
         def loss_function_ode(output, target):
         
-            trapz = (output[:-1] + output[1:]) * (t_train[1:] - t_train[:-1]) / 2
-            loss = torch.sum((trapz - target[1:])**2)
+            loss = torch.mean((output - target)**2)
 
             return loss
 
@@ -151,8 +150,7 @@ class cDGNN():
 
         def loss_function_ode(output, target):
         
-            trapz = (output[:-1] + output[1:]) * (t_train[1:] - t_train[:-1]) / 2
-            loss = torch.sum((trapz - target[1:])**2)
+            loss = torch.mean((output - target)**2)
 
             return loss
 
@@ -235,8 +233,7 @@ class cMGNN():
 
         def loss_function_ode(output, target):
         
-            trapz = (output[:-1] + output[1:]) * (t_train[1:] - t_train[:-1]) / 2
-            loss = torch.sum((trapz - target[1:])**2)
+            loss = torch.mean((output - target)**2)
 
             return loss
 
@@ -319,8 +316,7 @@ class cBNN():
 
         def loss_function_ode(output, target):
         
-            trapz = (output[:-1] + output[1:]) * (t_train[1:] - t_train[:-1]) / 2
-            loss = torch.sum((trapz - target[1:])**2)
+            loss = torch.mean((output - target)**2)
 
             return loss
 
@@ -367,7 +363,7 @@ class cBNN():
                 if i in range(6):
                     p.data.fill_(k_pred[i])
         
-    def loss(self, x):
+    def loss(self, x, y):
 
         g = x.clone()
         g.requires_grad = True
@@ -379,7 +375,7 @@ class cBNN():
                                                      - self.dnn.k3*self.cDG + self.dnn.k4*self.cMG*self.cB \
                                                      - self.dnn.k5*self.cMG + self.dnn.k6*self.cG*self.cB, self.f_hat)
         
-        loss_cB_data = self.loss_function_data(self.cB, self.cB_train)
+        loss_cB_data = self.loss_function_data(self.cB, y)
         
         loss = self.alpha*loss_cB_ode + (1-self.alpha)*loss_cB_data
         
@@ -391,7 +387,7 @@ class cBNN():
         
         self.pred(self.c_pred, self.k_pred)
         
-        loss = self.loss(self.t_train)
+        loss = self.loss(self.t_train, self.cB_train)
         
         loss.backward()
         
@@ -405,8 +401,7 @@ class cGNN():
 
         def loss_function_ode(output, target):
         
-            trapz = (output[:-1] + output[1:]) * (t_train[1:] - t_train[:-1]) / 2
-            loss = torch.sum((trapz - target[1:])**2)
+            loss = torch.mean((output - target)**2)
 
             return loss
 
@@ -451,7 +446,7 @@ class cGNN():
                 if i in range(6):
                     p.data.fill_(k_pred[i])
         
-    def loss(self, x):
+    def loss(self, x, y):
 
         g = x.clone()
         g.requires_grad = True
@@ -461,7 +456,7 @@ class cGNN():
         grad_cG = autograd.grad(self.cG, g, torch.ones(x.shape[0], 1).to(self.device), retain_graph=True, create_graph=True)[0]
         loss_cG_ode = self.loss_function_ode(grad_cG - self.dnn.k5*self.cMG + self.dnn.k6*self.cG*self.cB, self.f_hat)
         
-        loss_cG_data = self.loss_function_data(self.cG, self.cG_train)
+        loss_cG_data = self.loss_function_data(self.cG, y)
         
         loss = self.alpha*loss_cG_ode + (1-self.alpha)*loss_cG_data
         
@@ -473,7 +468,7 @@ class cGNN():
         
         self.pred(self.c_pred, self.k_pred)
         
-        loss = self.loss(self.t_train)
+        loss = self.loss(self.t_train, self.cG_train)
         
         loss.backward()
         
