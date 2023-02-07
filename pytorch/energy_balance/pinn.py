@@ -27,10 +27,10 @@ f_hat = torch.zeros(t_train.shape[0],1).to(device)
 Ea_pred = 100.
 A_pred = 10.
 k_pred = [Ea_pred, A_pred]
-PINN_cTG = cTGNN(device, f_hat, c_pred, k_pred, t_train, T_train, cTG_train, idx)
+PINN_cTG = cTGNN(device, f_hat, c_pred, k_pred, t_train, 1/T_train, cTG_train, idx)
 PINNs = [PINN_cTG]
 
-x_train = torch.cat((t_train, T_train), 1)
+x_train = t_train
 
 # Initial predictions
 for i, PINN in enumerate(PINNs):
@@ -39,12 +39,12 @@ for i, PINN in enumerate(PINNs):
 
 # Training
 epoch = 0
-max_epochs = 100000
+max_epochs = 200000
 vec_loss = []
 while epoch < max_epochs:
     # Backward
     for i, PINN in enumerate(PINNs):
-            train_cNN(PINN, i, c_pred, k_pred, t_train, T_train)
+            train_cNN(PINN, i, c_pred, k_pred, t_train, 1/T_train)
             vec_loss.append(float(PINN.loss(x_train, c_train[i]).detach().numpy()))
     
     epoch += 1
@@ -52,17 +52,17 @@ while epoch < max_epochs:
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t cTG_loss: {vec_loss[-1]:.4e}')
     
-    if epoch == 200:
+    if epoch == 20000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
             
-    if epoch == 1000:
+    if epoch == 100000:
         for PINN in PINNs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
             
-    if epoch == 10000:
-        for PINN in PINNs:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
+    #if epoch == X:
+    #    for PINN in PINNs:
+    #        PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
 
 print('\n')
 
@@ -86,7 +86,7 @@ axs[0].plot(t_num, y_num, '--', label='Euler')
 axs[0].plot(t_num2, y_num2, label='Real')
 axs[0].set_ylabel('Concentration [mol/L]')
 axs[0].legend()
-axs[1].plot(t_train.detach().numpy(), T_train.detach().numpy())
+axs[1].plot(t_train.detach().numpy(), (1/T_train).detach().numpy())
 axs[1].set_ylabel('Température [degC]')
 axs[1].set_xlabel('Temps [min]')
 plt.show()

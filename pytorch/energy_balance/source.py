@@ -23,7 +23,7 @@ class subDNN(nn.Module):
         
         self.activation = nn.Tanh()
         
-        self.f1 = nn.Linear(2, NEURONS)
+        self.f1 = nn.Linear(1, NEURONS)
         self.f2 = nn.Linear(NEURONS, NEURONS)
         self.f3 = nn.Linear(NEURONS, NEURONS)
         self.out = nn.Linear(NEURONS, 1)
@@ -104,13 +104,15 @@ class cTGNN():
 
         g = x.clone()
         g.requires_grad = True
-        
+        #g_t = self.T_train.clone()
+        #g_t.requires_grad = True
+
         self.cTG = self.dnn(g)
         
-        k1 = self.dnn.A * torch.exp(-self.dnn.Ea / self.T_train)
+        k1 = self.dnn.A * torch.exp(-self.dnn.Ea * self.T_train)
         
         grad_cTG = autograd.grad(self.cTG, g, torch.ones(x.shape[0], 1).to(self.device), \
-                                 retain_graph=True, create_graph=True)[0][:,0].reshape(-1,1)
+                                 retain_graph=True, create_graph=True)[0]
         loss_cTG_ode = self.loss_function_ode(grad_cTG + k1*self.cTG, self.f_hat)
         
         loss_cTG_data = self.loss_function_data(self.cTG, y)
@@ -125,7 +127,7 @@ class cTGNN():
         
         self.pred(self.k_pred)
         
-        x_train = torch.cat((self.t_train, self.T_train), 1)
+        x_train = self.t_train
         loss = self.loss(x_train, self.cTG_train)
         
         loss.backward()
@@ -140,5 +142,5 @@ def train_cNN(cNN, cNN_index, c_pred, k_pred, t_train, T_train):
             p.data.clamp_(min=0.)
             k_pred[i] = float(p.detach().numpy())
             
-    x_train = torch.cat((t_train, T_train), 1)
+    x_train = t_train
     c_pred[:,cNN_index] = cNN.dnn(x_train).detach().clone().flatten()
