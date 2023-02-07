@@ -72,7 +72,7 @@ line9, = axs[1,1].plot([], [])
 line10, = axs[1,1].plot([], [], 'o')
 line11, = axs[1,1].plot([], [], '--')
 
-max_epochs = 5000
+max_epochs = 1000
 def make_animation(j):
     epoch = j
     while epoch < max_epochs:
@@ -93,7 +93,7 @@ def make_animation(j):
                 kinetics[i].append(float(PINN.params[i-1][0].detach().numpy()))
 
         # Euler
-        y0 = np.array([0,0.491115698,0.030281241,0,0])
+        y0 = np.array([0,0.570199408,0.063624505,0,0])
         dt = 0.001
         tf = 8
         prm = []
