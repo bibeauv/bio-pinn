@@ -220,7 +220,7 @@ def train_cNN(cNN, NN_index, y_pred, k_pred, t_train):
     for i, p in enumerate(cNN.dnn.parameters()):
         if i == 0 or i == 1:
             p.data.clamp_(min=0.)
-            k_pred[i] = float(p.detach().numpy())
+            k_pred[i] = float(p.detach().cpu().numpy())
             
     x_train = t_train
     y_pred[NN_index] = cNN.dnn(x_train).detach().clone().flatten()

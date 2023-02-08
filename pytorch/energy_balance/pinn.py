@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Read and prepare data
-collocation_points = 100 * 10 + 1
+collocation_points = 1000 * 10 + 1
 t1 = 0.
 t2 = 10.
 T1 = 25.
@@ -49,10 +49,10 @@ vec_loss_Temp = []
 while epoch < max_epochs:
     # Backward
     train_cNN(PINN_cTG, 'cTG', y_pred, k_pred, t_train)
-    vec_loss_cTG.append(float(PINN_cTG.loss(x_train, cTG_train).detach().numpy()))
+    vec_loss_cTG.append(float(PINN_cTG.loss(x_train, cTG_train).detach().cpu().numpy()))
     
     train_cNN(PINN_Temp, 'Temp', y_pred, k_pred, t_train)
-    vec_loss_Temp.append(float(PINN_Temp.loss(x_train, T_train).detach().numpy()))
+    vec_loss_Temp.append(float(PINN_Temp.loss(x_train, T_train).detach().cpu().numpy()))
 
     epoch += 1
     
