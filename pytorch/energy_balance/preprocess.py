@@ -12,7 +12,7 @@ torch.manual_seed(1234)
 np.random.seed(1234)
 
 # Read data
-def read_data(Ea, A, Q, t1, t2, T1, T2, points, device, prm):
+def read_data(Ea, A, Q, t1, t2, points, device, prm):
     data = {}
     data['t'] = np.linspace(t1, t2, 6)
     
