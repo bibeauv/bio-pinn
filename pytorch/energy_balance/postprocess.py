@@ -11,11 +11,12 @@ def EDO(y, prm):
     Q = prm[1]
     V = prm[2]
     dHrx = prm[3]
+    epsilon = prm[4]
     
     f = np.zeros(2)
     
     f[0] = - k1*y[0]
-    f[1] = Q + dHrx * f[0] * V
+    f[1] = epsilon*Q + dHrx * f[0] * V
     
     return f
 
@@ -33,7 +34,7 @@ def euler_explicite(y0, Ea, A, dt, tf, prm):
         
         y0 = np.copy(y)
         
-        prm = [A*np.exp(-Ea/y[1]), prm[1], prm[2], prm[3]]
+        prm = [A*np.exp(-Ea/y[1]), prm[1], prm[2], prm[3], prm[4]]
         j += 1
     
     return t, mat_y

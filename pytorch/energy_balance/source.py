@@ -11,7 +11,7 @@ torch.manual_seed(1234)
 np.random.seed(1234)
 
 # Params
-LEARNING_RATE = 1e-2
+LEARNING_RATE = 1e-3
 NEURONS = 10
 ALPHA = 0.5
 
@@ -23,7 +23,7 @@ class subDNN(nn.Module):
         
         self.activation = nn.Tanh()
         
-        self.f1 = nn.Linear(1, NEURONS)
+        self.f1 = nn.Linear(2, NEURONS)
         self.f2 = nn.Linear(NEURONS, NEURONS)
         self.f3 = nn.Linear(NEURONS, NEURONS)
         self.out = nn.Linear(NEURONS, 1)
@@ -55,7 +55,7 @@ class subDNN(nn.Module):
     
 class cTGNN():
     
-    def __init__(self, device, f_hat, y_pred, k_pred, t_train, cTG_train, idx):
+    def __init__(self, device, f_hat, y_pred, k_pred, x_train, cTG_train, idx):
 
         self.dnn = subDNN().to(device)
 
@@ -84,7 +84,7 @@ class cTGNN():
         self.f_hat = f_hat
         self.y_pred = y_pred
         self.k_pred = k_pred
-        self.t_train = t_train
+        self.x_train = x_train
         self.cTG_train = cTG_train
         self.grad_cTG_pred = None
         self.idx = idx
@@ -112,7 +112,7 @@ class cTGNN():
         k1 = self.dnn.A * torch.exp(-self.dnn.Ea / self.Temp)
         
         grad_cTG = autograd.grad(self.cTG, g, torch.ones(x.shape[0], 1).to(self.device), \
-                                 retain_graph=True, create_graph=True)[0]
+                                 retain_graph=True, create_graph=True)[0][:,0].reshape(-1,1)
         self.y_pred['grad_cTG'] = grad_cTG.detach().clone()
         loss_cTG_ode = self.loss_function_ode(grad_cTG + k1*self.cTG, self.f_hat)
         
@@ -128,8 +128,7 @@ class cTGNN():
         
         self.pred(self.y_pred, self.k_pred)
         
-        x_train = self.t_train
-        loss = self.loss(x_train, self.cTG_train)
+        loss = self.loss(self.x_train, self.cTG_train)
         
         loss.backward()
         
@@ -137,7 +136,7 @@ class cTGNN():
 
 class TempNN():
     
-    def __init__(self, device, f_hat, y_pred, k_pred, t_train, T_train, prm_mw, idx):
+    def __init__(self, device, f_hat, y_pred, k_pred, x_train, T_train, prm_mw, idx):
 
         self.dnn = subDNN().to(device)
 
@@ -166,7 +165,7 @@ class TempNN():
         self.f_hat = f_hat
         self.y_pred = y_pred
         self.k_pred = k_pred
-        self.t_train = t_train
+        self.x_train = x_train
         self.T_train = T_train
         self.prm_mw = prm_mw
         self.idx = idx
@@ -191,9 +190,11 @@ class TempNN():
 
         self.Temp = self.dnn(g)
         
-        grad_Temp = autograd.grad(self.Temp, g, torch.ones(x.shape[0], 1).to(self.device), retain_graph=True, create_graph=True)[0]
+        grad_Temp = autograd.grad(self.Temp, g, torch.ones(x.shape[0], 1).to(self.device), \
+                                  retain_graph=True, create_graph=True)[0][:,0].reshape(-1,1)
 
-        loss_Temp_ode = self.loss_function_ode(grad_Temp - self.prm_mw.Q - self.prm_mw.dHrx * self.grad_cTG * self.prm_mw.V, self.f_hat)
+        loss_Temp_ode = self.loss_function_ode(grad_Temp - 0.1 * g[:,1].reshape(-1,1) - \
+                                               self.prm_mw.dHrx * self.grad_cTG * self.prm_mw.V, self.f_hat)
         
         loss_Temp_data = self.loss_function_data(self.Temp, y)
         
@@ -207,14 +208,13 @@ class TempNN():
         
         self.pred(self.y_pred, self.k_pred)
         
-        x_train = self.t_train
-        loss = self.loss(x_train, self.T_train)
+        loss = self.loss(self.x_train, self.T_train)
         
         loss.backward()
         
         return loss
 
-def train_cNN(cNN, NN_index, y_pred, k_pred, t_train):
+def train_cNN(cNN, NN_index, y_pred, k_pred, x_train):
     
     cNN.optimizer.step(cNN.closure)
     for i, p in enumerate(cNN.dnn.parameters()):
@@ -222,5 +222,4 @@ def train_cNN(cNN, NN_index, y_pred, k_pred, t_train):
             p.data.clamp_(min=0.)
             k_pred[i] = float(p.detach().cpu().numpy())
             
-    x_train = t_train
     y_pred[NN_index] = cNN.dnn(x_train).detach().clone().flatten()
