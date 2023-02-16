@@ -15,7 +15,7 @@ def EDO(y, prm):
     f = np.zeros(2)
 
     f[0] = -k * y[0]
-    f[1] = Q + dHrx * f[0] * V
+    f[1] = Q + dHrx/3 * f[0] * V
 
     return f
 

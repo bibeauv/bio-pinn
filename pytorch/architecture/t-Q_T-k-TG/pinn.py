@@ -105,7 +105,7 @@ class Curiosity():
                                [0][:,0].reshape(-1,1)
 
         loss_cTG_ode = self.loss_function_ode(grad_cTG + k*cTG, self.f_hat)
-        loss_T_ode = self.loss_function_ode(grad_T - Q - self.prm.dHrx * self.prm.V * grad_cTG, self.f_hat)
+        loss_T_ode = self.loss_function_ode(grad_T - Q - self.prm.dHrx/3 * self.prm.V * grad_cTG, self.f_hat)
         
         loss_cTG_data = self.loss_function_data(cTG, y_train[:,0].reshape(-1,1))
         loss_T_data = self.loss_function_data(T, y_train[:,1].reshape(-1,1))
@@ -129,7 +129,7 @@ class Curiosity():
          torch.save(self.PINN, PATH)
     
 # Full PINN to discover Ea & A
-class Discover():
+class Discovery():
 
     def __init__(self, X, Y, idx, f_hat, device, prm, Ea, A):
         
