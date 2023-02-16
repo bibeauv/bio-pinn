@@ -50,10 +50,10 @@ X_train, Y_train = put_in_device(X, Y, device)
 # Create PINN
 f_hat = torch.zeros(X_train.shape[0],1).to(device)
 PINN_TG = Discover(X_train, Y_train, idx, f_hat, device, prm, 
-                   Ea=200., A=50.0)
+                   Ea=188.5, A=45.2)
 
 # Training
-epochs = 200000
+epochs = 1000000
 epoch = 1
 vec_loss = []
 while epoch <= epochs:
@@ -61,9 +61,9 @@ while epoch <= epochs:
     vec_loss.append(float(PINN_TG.loss(X_train, Y_train).detach().numpy()))
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t loss: {vec_loss[-1]:.4e}, \t Ea: {PINN_TG.Ea:.2f}, \t A: {PINN_TG.A:.2f}')
-    if epoch == 800:
+    if epoch == 200:
         PINN_TG.optimizer = torch.optim.Adam(PINN_TG.params, lr=1e-4)
-    if epoch == 50000:
+    if epoch == 20000:
         PINN_TG.optimizer = torch.optim.Adam(PINN_TG.params, lr=1e-5)
     #if epoch == X:
     #    PINN_TG.optimizer = torch.optim.Adam(PINN_TG.params, lr=1e-6)
@@ -85,6 +85,8 @@ plt.plot(X_train[101:202,0].detach().numpy(), PINN_TG.PINN(X_train[101:202])[:,0
 plt.plot(X_train[idx[1::3],0].detach().numpy(), Y_train[idx[1::3],0].detach().numpy(), 'o')
 plt.plot(X_train[202:303,0].detach().numpy(), PINN_TG.PINN(X_train[202:303])[:,0].detach().numpy())
 plt.plot(X_train[idx[2::3],0].detach().numpy(), Y_train[idx[2::3],0].detach().numpy(), 'o')
+plt.xlabel('Time [min]')
+plt.ylabel('Concentration [mol/L]')
 plt.show()
 
 plt.plot(X_train[0:101,0].detach().numpy(), PINN_TG.PINN(X_train[0:101])[:,1].detach().numpy())
@@ -93,6 +95,8 @@ plt.plot(X_train[101:202,0].detach().numpy(), PINN_TG.PINN(X_train[101:202])[:,1
 plt.plot(X_train[idx[1::3],0].detach().numpy(), Y_train[idx[1::3],1].detach().numpy(), 'o')
 plt.plot(X_train[202:303,0].detach().numpy(), PINN_TG.PINN(X_train[202:303])[:,1].detach().numpy())
 plt.plot(X_train[idx[2::3],0].detach().numpy(), Y_train[idx[2::3],1].detach().numpy(), 'o')
+plt.xlabel('Time [min]')
+plt.ylabel(r'Temperature [$\degree$C]')
 plt.show()
 
 plt.plot(Y_train[0:101,1].detach().numpy(), PINN_TG.PINN(X_train[0:101])[:,2].detach().numpy())
@@ -101,4 +105,6 @@ plt.plot(Y_train[101:202,1].detach().numpy(), PINN_TG.PINN(X_train[101:202])[:,2
 plt.plot(Y_train[101:202,1].detach().numpy(), real_k[101:202], '--')
 plt.plot(Y_train[202:303,1].detach().numpy(), PINN_TG.PINN(X_train[202:303])[:,2].detach().numpy())
 plt.plot(Y_train[202:303,1].detach().numpy(), real_k[202:303], '--')
+plt.xlabel(r'Temperature [$\degree$C]')
+plt.ylabel(r'Kinetic constant [min$^{-1}$]')
 plt.show()

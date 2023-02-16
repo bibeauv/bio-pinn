@@ -87,6 +87,8 @@ plt.plot(X_train[101:202,0].detach().numpy(), PINN_TG.PINN(X_train[101:202])[:,0
 plt.plot(X_train[idx[1::3],0].detach().numpy(), Y_train[idx[1::3],0].detach().numpy(), 'o')
 plt.plot(X_train[202:303,0].detach().numpy(), PINN_TG.PINN(X_train[202:303])[:,0].detach().numpy())
 plt.plot(X_train[idx[2::3],0].detach().numpy(), Y_train[idx[2::3],0].detach().numpy(), 'o')
+plt.xlabel('Time [min]')
+plt.ylabel('Concentration [mol/L]')
 plt.show()
 
 plt.plot(X_train[0:101,0].detach().numpy(), PINN_TG.PINN(X_train[0:101])[:,1].detach().numpy())
@@ -95,6 +97,8 @@ plt.plot(X_train[101:202,0].detach().numpy(), PINN_TG.PINN(X_train[101:202])[:,1
 plt.plot(X_train[idx[1::3],0].detach().numpy(), Y_train[idx[1::3],1].detach().numpy(), 'o')
 plt.plot(X_train[202:303,0].detach().numpy(), PINN_TG.PINN(X_train[202:303])[:,1].detach().numpy())
 plt.plot(X_train[idx[2::3],0].detach().numpy(), Y_train[idx[2::3],1].detach().numpy(), 'o')
+plt.xlabel('Time [min]')
+plt.ylabel(r'Temperature [$\degree$C]')
 plt.show()
 
 plt.plot(Y_train[0:101,1].detach().numpy(), PINN_TG.PINN(X_train[0:101])[:,2].detach().numpy())
@@ -103,4 +107,6 @@ plt.plot(Y_train[101:202,1].detach().numpy(), PINN_TG.PINN(X_train[101:202])[:,2
 plt.plot(Y_train[101:202,1].detach().numpy(), real_k[101:202], '--')
 plt.plot(Y_train[202:303,1].detach().numpy(), PINN_TG.PINN(X_train[202:303])[:,2].detach().numpy())
 plt.plot(Y_train[202:303,1].detach().numpy(), real_k[202:303], '--')
+plt.xlabel(r'Temperature [$\degree$C]')
+plt.ylabel(r'Kinetic constant [min$^{-1}$]')
 plt.show()
