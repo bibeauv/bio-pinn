@@ -49,8 +49,8 @@ X_train, Y_train = put_in_device(X, Y, device)
 
 # Create PINN
 f_hat = torch.zeros(X_train.shape[0],1).to(device)
-PINN_TG = TGNeuralNetDiscovery(X_train, Y_train, idx, f_hat, device, prm, 
-                               Ea=200., A=50.0)
+PINN_TG = Discover(X_train, Y_train, idx, f_hat, device, prm, 
+                   Ea=200., A=50.0)
 
 # Training
 epochs = 200000

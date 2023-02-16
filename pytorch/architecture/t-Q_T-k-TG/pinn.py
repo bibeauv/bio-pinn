@@ -50,7 +50,7 @@ class PINeuralNet(nn.Module):
         return a_4
 
 # Full PINN to discover k
-class TGNeuralNet():
+class Curiosity():
 
     def __init__(self, X, Y, idx, f_hat, device, prm):
         
@@ -129,7 +129,7 @@ class TGNeuralNet():
          torch.save(self.PINN, PATH)
     
 # Full PINN to discover Ea & A
-class TGNeuralNetDiscovery():
+class Discover():
 
     def __init__(self, X, Y, idx, f_hat, device, prm, Ea, A):
         

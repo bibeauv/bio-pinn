@@ -49,7 +49,7 @@ X_train, Y_train = put_in_device(X, Y, device)
 
 # Create PINN
 f_hat = torch.zeros(X_train.shape[0],1).to(device)
-PINN_TG = TGNeuralNet(X_train, Y_train, idx, f_hat, device, prm)
+PINN_TG = Curiosity(X_train, Y_train, idx, f_hat, device, prm)
 
 # Make all outputs positive
 for i, p in enumerate(PINN_TG.PINN.parameters()):
