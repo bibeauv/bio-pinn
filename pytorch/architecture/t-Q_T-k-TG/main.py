@@ -56,7 +56,7 @@ for i, p in enumerate(PINN_TG.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 # Training
-epochs = 1000000
+epochs = 50000
 epoch = 1
 vec_loss = []
 while epoch <= epochs:

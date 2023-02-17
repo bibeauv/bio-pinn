@@ -60,7 +60,13 @@ class Curiosity():
 
             return loss
 
-        def loss_function_data(output, target):
+        def loss_function_c_data(output, target):
+
+            loss = torch.mean((output[[0,101,202]] - target[[0,101,202]])**2)
+
+            return loss
+        
+        def loss_function_T_data(output, target):
 
             loss = torch.mean((output[idx] - target[idx])**2)
 
@@ -72,7 +78,8 @@ class Curiosity():
         self.y = Y
 
         self.loss_function_ode = loss_function_ode
-        self.loss_function_data = loss_function_data
+        self.loss_function_c_data = loss_function_c_data
+        self.loss_function_T_data = loss_function_T_data
         self.f_hat = f_hat
 
         self.device = device
@@ -107,10 +114,10 @@ class Curiosity():
         loss_cTG_ode = self.loss_function_ode(grad_cTG + k*cTG, self.f_hat)
         loss_T_ode = self.loss_function_ode(grad_T - Q - self.prm.dHrx/3 * self.prm.V * grad_cTG, self.f_hat)
         
-        loss_cTG_data = self.loss_function_data(cTG, y_train[:,0].reshape(-1,1))
-        loss_T_data = self.loss_function_data(T, y_train[:,1].reshape(-1,1))
+        loss_cTG_data = self.loss_function_c_data(cTG, y_train[:,0].reshape(-1,1))
+        loss_T_data = self.loss_function_T_data(T, y_train[:,1].reshape(-1,1))
         
-        loss = loss_cTG_ode + loss_T_ode + loss_cTG_data + loss_T_data
+        loss = loss_cTG_ode + loss_T_ode + loss_T_data + loss_cTG_data
         
         return loss
     
