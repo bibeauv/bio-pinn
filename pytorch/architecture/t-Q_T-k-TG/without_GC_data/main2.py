@@ -15,7 +15,7 @@ class parameters():
     dHrx = -45650              # J/mol
     epsilon = 0.2              # -
     V = 6.3                    # mL
-    m = 5.6                # g/mL
+    m = 5.6                    # g
     Cp = 2                     # J/g/C
 prm = parameters()
 
@@ -32,9 +32,9 @@ for i in range(len(t_train)-1):
     if (t_train[i+1] - t_train[i]) < 0:
         start.append(i+1)
 idx1_ = np.arange(start[0],start[1])
-idx1 = idx1_[::60]
+idx1 = idx1_[::20]
 idx2_ = np.arange(start[1],len(t_train))
-idx2 = idx2_[::60]
+idx2 = idx2_[::20]
 idx = idx1.tolist() + idx2.tolist()
 idx_y0 = start + [start[1]-1] + [len(t_train)-1]
 
@@ -47,7 +47,7 @@ X_train, Y_train = put_in_device(X, Y, device)
 # Create PINN
 f_hat = torch.zeros(X_train.shape[0],1).to(device)
 PINN = Discovery(X_train, Y_train, y0, idx, idx_y0, f_hat, device, prm,
-                 Ea=200.0, A=0.16)
+                 Ea=262.0, A=0.7)
 
 # Training
 PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
@@ -59,9 +59,9 @@ while epoch <= epochs:
     vec_loss.append(float(PINN.loss(X_train, Y_train).detach().numpy()))
     if epoch % 100 == 0:
         print(f'Epoch {epoch}, \t T_data_loss: {PINN.loss_T_data:.4e} \t cTG_data_loss: {PINN.loss_cTG_data:.4e} \t T_ode_loss: {PINN.loss_T_ode:.4e} \t cTG_ode_loss: {PINN.loss_cTG_ode:.4e} \t k_loss: {PINN.loss_k:.4e} \t Ea: {PINN.Ea:.2f} \t A: {PINN.A:.2f}')
-    if epoch == 400:
+    if epoch == 5000:
         PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
-    if epoch == 1000:
+    if epoch == 10000:
         PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
     epoch += 1
 
@@ -76,13 +76,13 @@ plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(X_train)[idx1_,1].detach()
 plt.plot(X_train[idx1,0].detach().numpy(), T_train[idx1], 'o')
 plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(X_train)[idx2_,1].detach().numpy())
 plt.plot(X_train[idx2,0].detach().numpy(), T_train[idx2], 'o')
-plt.xlabel('Time [min]')
+plt.xlabel('Time [sec]')
 plt.ylabel(r'Temperature [$\degree$C]')
 plt.show()
 
 plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(X_train)[idx1_,0].detach().numpy())
 plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(X_train)[idx2_,0].detach().numpy())
-plt.xlabel('Time [min]')
+plt.xlabel('Time [sec]')
 plt.ylabel(r'Concentration [mol/L]')
 plt.show()
 

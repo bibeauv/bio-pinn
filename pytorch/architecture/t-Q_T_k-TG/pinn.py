@@ -15,21 +15,22 @@ np.random.seed(1234)
 NEURONS = 10
 LEARNING_RATE = 1e-3
 ALPHA = 0.5
-PATH = os.getcwd() + '/model.pt'
+PATH1 = os.getcwd() + '/Curiosity.pt'
+PATH2 = os.getcwd() + '/TheRover.pt'
 
 # PINN architecture
 class PINeuralNet(nn.Module):
 
-    def __init__(self):
+    def __init__(self, inputs, outputs):
 
         super().__init__()
 
         self.activation = nn.Tanh()
 
-        self.f1 = nn.Linear(2, NEURONS)
+        self.f1 = nn.Linear(inputs, NEURONS)
         self.f2 = nn.Linear(NEURONS, NEURONS)
         self.f3 = nn.Linear(NEURONS, NEURONS)
-        self.out = nn.Linear(NEURONS, 3)
+        self.out = nn.Linear(NEURONS, outputs)
 
     def forward(self, x):
 
@@ -72,7 +73,85 @@ class Curiosity():
 
             return loss
         
-        self.PINN = PINeuralNet().to(device)
+        self.PINN = PINeuralNet(1,2).to(device)
+
+        self.x = X
+        self.y = Y
+        self.y0 = y0
+
+        self.loss_function_ode = loss_function_ode
+        self.loss_function_c_data = loss_function_c_data
+        self.loss_function_T_data = loss_function_T_data
+        self.f_hat = f_hat
+
+        self.device = device
+        self.lr = LEARNING_RATE
+        self.params = list(self.PINN.parameters())
+        self.optimizer = torch.optim.Adam(self.params, lr=self.lr)
+
+        self.prm = prm
+
+    def loss(self, x, y_train):
+
+        g = x.clone()
+        g.requires_grad = True
+
+        y = self.PINN(g)
+
+        cTG = y[:,0].reshape(-1,1)
+        k = y[:,1].reshape(-1,1)
+        
+        self.grad_cTG = autograd.grad(cTG, g, torch.ones(x.shape[0], 1).to(self.device), \
+                                 retain_graph=True, create_graph=True) \
+                                 [0][:,0].reshape(-1,1)
+
+        self.loss_cTG_ode = self.loss_function_ode(self.grad_cTG + k*cTG, self.f_hat)
+        
+        self.loss_cTG_data = self.loss_function_c_data(cTG, self.y0)
+        
+        self.total_loss = self.loss_cTG_ode + self.loss_cTG_data
+        
+        return self.total_loss
+    
+    def closure(self):
+
+        self.optimizer.zero_grad()
+        
+        loss = self.loss(self.x, self.y)
+        
+        loss.backward()
+        
+        return loss
+    
+    def save_model(self, PATH=PATH1):
+         
+         torch.save(self.PINN, PATH)
+
+# PINN for the temperature
+class TheRover():
+
+    def __init__(self, Curiosity, X, Y, y0, idx, idx_y0, f_hat, device, prm):
+        
+        def loss_function_ode(output, target):
+            
+            loss = torch.mean((output - target)**2)
+
+            return loss
+
+        def loss_function_c_data(output, target):
+
+            loss = torch.mean((output[idx_y0] - target)**2)
+
+            return loss
+        
+        def loss_function_T_data(output, target):
+
+            loss = torch.mean((output[idx] - target[idx])**2)
+
+            return loss
+        
+        self.PINN = PINeuralNet(2,1).to(device)
+        self.Curiosity = Curiosity
 
         self.x = X
         self.y = Y
@@ -100,27 +179,19 @@ class Curiosity():
 
         y = self.PINN(g)
 
-        cTG = y[:,0].reshape(-1,1)
-        T = y[:,1].reshape(-1,1)
-        k = y[:,2].reshape(-1,1)
-        
-        grad_cTG = autograd.grad(cTG, g, torch.ones(x.shape[0], 1).to(self.device), \
-                                 retain_graph=True, create_graph=True) \
-                                 [0][:,0].reshape(-1,1)
+        T = y
         
         grad_T = autograd.grad(T, g, torch.ones(x.shape[0], 1).to(self.device), \
                                retain_graph=True, create_graph=True) \
                                [0][:,0].reshape(-1,1)
-
-        self.loss_cTG_ode = self.loss_function_ode(grad_cTG + k*cTG, self.f_hat)
+        
         self.loss_T_ode = self.loss_function_ode(grad_T * self.prm.m * self.prm.Cp - \
                                                       self.prm.epsilon*Q - \
-                                                      self.prm.dHrx * self.prm.V/1000 * grad_cTG, self.f_hat)
+                                                      self.prm.dHrx * self.prm.V/1000 * self.Curiosity.grad_cTG.detach(), self.f_hat)
         
-        self.loss_cTG_data = self.loss_function_c_data(cTG, self.y0)
         self.loss_T_data = self.loss_function_T_data(T, y_train)
-        
-        self.total_loss = self.loss_cTG_ode + self.loss_T_ode + self.loss_T_data + 1e6*self.loss_cTG_data
+
+        self.total_loss = self.loss_T_ode + self.loss_T_data
         
         return self.total_loss
     
@@ -134,10 +205,10 @@ class Curiosity():
         
         return loss
     
-    def save_model(self, PATH):
+    def save_model(self, PATH=PATH2):
          
          torch.save(self.PINN, PATH)
-    
+
 # Full PINN to discover Ea & A
 class Discovery():
 
@@ -161,7 +232,7 @@ class Discovery():
 
             return loss
         
-        self.PINN = torch.load(PATH)
+        self.PINN = torch.load(PATH1)
         self.PINN.eval()
 
         self.Ea = torch.tensor(Ea, requires_grad=True).float().to(device)

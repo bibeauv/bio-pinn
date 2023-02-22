@@ -32,9 +32,9 @@ for i in range(len(t_train)-1):
     if (t_train[i+1] - t_train[i]) < 0:
         start.append(i+1)
 idx1_ = np.arange(start[0],start[1])
-idx1 = idx1_[::60]
+idx1 = idx1_[::20]
 idx2_ = np.arange(start[1],len(t_train))
-idx2 = idx2_[::60]
+idx2 = idx2_[::20]
 idx = idx1.tolist() + idx2.tolist()
 idx_y0 = start + [start[1]-1] + [len(t_train)-1]
 
@@ -53,7 +53,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 # Training
-epochs = 50000
+epochs = 100000
 epoch = 1
 vec_loss = []
 while epoch <= epochs:
@@ -80,13 +80,13 @@ plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(X_train)[idx1_,1].detach()
 plt.plot(X_train[idx1,0].detach().numpy(), T_train[idx1], 'o')
 plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(X_train)[idx2_,1].detach().numpy())
 plt.plot(X_train[idx2,0].detach().numpy(), T_train[idx2], 'o')
-plt.xlabel('Time [min]')
+plt.xlabel('Time [sec]')
 plt.ylabel(r'Temperature [$\degree$C]')
 plt.show()
 
 plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(X_train)[idx1_,0].detach().numpy())
 plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(X_train)[idx2_,0].detach().numpy())
-plt.xlabel('Time [min]')
+plt.xlabel('Time [sec]')
 plt.ylabel(r'Concentration [mol/L]')
 plt.show()
 
