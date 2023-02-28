@@ -51,7 +51,7 @@ PINN = Discovery(X_train, Y_train, y0, idx, idx_y0, f_hat, device, prm,
 
 # Training
 PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
-epochs = 0
+epochs = 50000
 epoch = 1
 vec_loss = []
 while epoch <= epochs:
@@ -86,8 +86,8 @@ plt.xlabel('Time [sec]')
 plt.ylabel(r'Concentration [mol/L]')
 plt.show()
 
-plt.plot(PINN.PINN(X_train)[idx1_,1].detach().numpy(), PINN.PINN(X_train)[idx1_,2].detach().numpy())
-plt.plot(PINN.PINN(X_train)[idx2_,1].detach().numpy(), PINN.PINN(X_train)[idx2_,2].detach().numpy())
+plt.plot(T_train[idx1], PINN.PINN(X_train)[idx1,2].detach().numpy())
+plt.plot(T_train[idx2], PINN.PINN(X_train)[idx2,2].detach().numpy())
 plt.xlabel(r'Temperature [$\degree$C]')
 plt.ylabel(r'Kinetic constant [s$^{-1}$]')
 plt.show()

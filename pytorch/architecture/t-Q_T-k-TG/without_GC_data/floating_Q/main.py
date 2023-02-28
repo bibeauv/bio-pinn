@@ -13,7 +13,7 @@ y0 = torch.from_numpy(np.array([0.6, 0.6, 0.02, 0.02]).reshape(-1,1)).float().to
 # Parameters
 class parameters():
     dHrx = -45650              # J/mol
-    epsilon = 0.2              # -
+    epsilon = 0.1              # -
     V = 6.3                    # mL
     m = 5.6                    # g
     Cp = 2                     # J/g/C
@@ -42,28 +42,34 @@ X = np.append(t_train.reshape(-1,1), Q_train.reshape(-1,1), axis=1)
 Y = T_train.reshape(-1,1)
 
 # Train data
+x_train = torch.from_numpy(t_train.reshape(-1,1)).float().to(device)
 X_train, Y_train = put_in_device(X, Y, device)
+Q_train = torch.from_numpy(Q_train.reshape(-1,1)).float().to(device)
 
 # Create PINN
-f_hat = torch.zeros(X_train.shape[0],1).to(device)
-PINN = Discovery(X_train, Y_train, y0, idx, idx_y0, f_hat, device, prm,
-                 Ea=262.0, A=0.7)
+f_hat = torch.zeros(x_train.shape[0],1).to(device)
+PINN = Curiosity(x_train, Y_train, Q_train, y0, idx, idx_y0, f_hat, device, prm)
+
+# Make all outputs positive
+for i, p in enumerate(PINN.PINN.parameters()):
+    p.data.clamp_(min=0.)
 
 # Training
-PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-3)
-epochs = 0
+epochs = 50000
 epoch = 1
 vec_loss = []
 while epoch <= epochs:
     PINN.optimizer.step(PINN.closure)
-    vec_loss.append(float(PINN.loss(X_train, Y_train).detach().numpy()))
+    vec_loss.append(float(PINN.loss(x_train, Y_train).detach().numpy()))
     if epoch % 100 == 0:
-        print(f'Epoch {epoch}, \t T_data_loss: {PINN.loss_T_data:.4e} \t cTG_data_loss: {PINN.loss_cTG_data:.4e} \t T_ode_loss: {PINN.loss_T_ode:.4e} \t cTG_ode_loss: {PINN.loss_cTG_ode:.4e} \t k_loss: {PINN.loss_k:.4e} \t Ea: {PINN.Ea:.2f} \t A: {PINN.A:.2f}')
-    if epoch == 5000:
+        print(f'Epoch {epoch}, \t total_loss: {PINN.total_loss:.2e} \t T_data_loss: {PINN.loss_T_data:.2e} \t cTG_data_loss: {PINN.loss_cTG_data:.2e} \t T_ode_loss: {PINN.loss_T_ode:.2e} \t cTG_ode_loss: {PINN.loss_cTG_ode:.2e}')
+    if epoch == 6500:
         PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
-    if epoch == 10000:
+    if epoch == 15000:
         PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
     epoch += 1
+
+PINN.save_model(PATH)
 
 plt.plot(vec_loss)
 plt.xscale('log')
@@ -72,22 +78,22 @@ plt.ylabel('MSE loss')
 plt.yscale('log')
 plt.show()
 
-plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(X_train)[idx1_,1].detach().numpy())
+plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(x_train)[idx1_,1].detach().numpy())
 plt.plot(X_train[idx1,0].detach().numpy(), T_train[idx1], 'o')
-plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(X_train)[idx2_,1].detach().numpy())
+plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(x_train)[idx2_,1].detach().numpy())
 plt.plot(X_train[idx2,0].detach().numpy(), T_train[idx2], 'o')
 plt.xlabel('Time [sec]')
 plt.ylabel(r'Temperature [$\degree$C]')
 plt.show()
 
-plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(X_train)[idx1_,0].detach().numpy())
-plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(X_train)[idx2_,0].detach().numpy())
+plt.plot(X_train[idx1_,0].detach().numpy(), PINN.PINN(x_train)[idx1_,0].detach().numpy())
+plt.plot(X_train[idx2_,0].detach().numpy(), PINN.PINN(x_train)[idx2_,0].detach().numpy())
 plt.xlabel('Time [sec]')
 plt.ylabel(r'Concentration [mol/L]')
 plt.show()
 
-plt.plot(PINN.PINN(X_train)[idx1_,1].detach().numpy(), PINN.PINN(X_train)[idx1_,2].detach().numpy())
-plt.plot(PINN.PINN(X_train)[idx2_,1].detach().numpy(), PINN.PINN(X_train)[idx2_,2].detach().numpy())
+plt.plot(T_train[idx1], PINN.PINN(x_train)[idx1,2].detach().numpy())
+plt.plot(T_train[idx2], PINN.PINN(x_train)[idx2,2].detach().numpy())
 plt.xlabel(r'Temperature [$\degree$C]')
 plt.ylabel(r'Kinetic constant [s$^{-1}$]')
 plt.show()
