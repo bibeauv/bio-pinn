@@ -52,7 +52,7 @@ class PINeuralNet(nn.Module):
 # Full PINN to discover k
 class Curiosity():
 
-    def __init__(self, X, Y_external, y0, idx, idx_y0, f_hat, device, prm):
+    def __init__(self, X, Y_external, y0, idx, idx_y0, idx_CI, f_hat, device, prm):
         
         def loss_function_ode(output, target):
             
@@ -62,7 +62,13 @@ class Curiosity():
 
         def loss_function_c_data(output, target):
 
-            loss = torch.mean((output[idx_y0] - target)**2)
+            loss = torch.mean((output[idx_y0] - target[[-1, -2]])**2)
+
+            return loss
+        
+        def loss_function_CI(output, target):
+
+            loss = torch.mean((output[idx_CI] - target[[0, 1]])**2)
 
             return loss
         
@@ -81,6 +87,7 @@ class Curiosity():
         self.loss_function_ode = loss_function_ode
         self.loss_function_c_data = loss_function_c_data
         self.loss_function_T_data = loss_function_T_data
+        self.loss_function_CI = loss_function_CI
         self.f_hat = f_hat
 
         self.device = device
@@ -117,8 +124,10 @@ class Curiosity():
                                                  self.prm.dHrx * self.prm.V/1000 * grad_cTG, self.f_hat)
         
         self.loss_cTG_data = self.loss_function_c_data(cTG, self.y0)
+
+        self.loss_CI = self.loss_function_CI(cTG, self.y0)
         
-        self.total_loss = self.loss_cTG_ode + self.loss_T_ode + 1e6*self.loss_cTG_data
+        self.total_loss = self.loss_cTG_ode + 1e2*self.loss_T_ode + 1e2*self.loss_cTG_data + 1e6*self.loss_CI
         
         return self.total_loss
     

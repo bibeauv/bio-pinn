@@ -1,7 +1,6 @@
 # Importation de librairies
 import numpy as np
-from scipy.interpolate import CubicSpline
-from scipy import interpolate
+from scipy.interpolate import interp1d
 import torch
 
 # Set seed
@@ -38,7 +37,7 @@ def read_data(files):
 
 def interpolation(x, y, kind):
 
-    i = interpolate.interp1d(np.array(x), np.array(y), kind)
+    i = interp1d(np.array(x), np.array(y), kind)
 
     return i
 
