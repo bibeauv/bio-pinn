@@ -17,14 +17,14 @@ class subDNN(nn.Module):
         super().__init__()
         
         self.activation = activation
-        # self.activation_out = nn.ReLU()
+        self.activation_out = nn.ReLU()
 
         self.f1 = nn.Linear(2, neurons)
         self.f2 = nn.Linear(neurons, neurons)
         self.f3 = nn.Linear(neurons, neurons)
-        self.out = nn.Linear(neurons, 1)
+        self.out = nn.Linear(neurons, 2)
         
-        self.k1 = nn.Parameter(params[0])
+        # self.k1 = nn.Parameter(params[0])
         # self.k2 = nn.Parameter(params[1])
         # self.k3 = nn.Parameter(params[2])
         # self.k4 = nn.Parameter(params[3])
@@ -47,6 +47,7 @@ class subDNN(nn.Module):
         z_3 = self.f3(a_2)
         a_3 = self.activation(z_3)
         a_4 = self.out(a_3)
+        a_4 = self.activation_out(a_4)
         
         return a_4
     
@@ -79,7 +80,7 @@ class PINN():
         self.loss_function_IC = self.nn.loss_function_IC
         self.idx = idx
 
-        self.nn.register_parameter('k1', self.nn.k1)
+        # self.nn.register_parameter('k1', self.nn.k1)
         # self.nn.register_parameter('k2', self.nn.k2)
         # self.nn.register_parameter('k3', self.nn.k3)
         # self.nn.register_parameter('k4', self.nn.k4)
@@ -107,7 +108,7 @@ class PINN():
         # self.cMG = self.c[:,3].reshape(-1,1)
         # self.cG = self.c[:,4].reshape(-1,1)
         # self.T = self.c[:,1].reshape(-1,1)
-        # self.k1 = self.c[:,1].reshape(-1,1)
+        self.k1 = self.c[:,1].reshape(-1,1)
         # self.k2 = self.c[:,6].reshape(-1,1)
         # self.k3 = self.c[:,7].reshape(-1,1)
         # self.k4 = self.c[:,8].reshape(-1,1)
@@ -126,7 +127,7 @@ class PINN():
         # Loss TG
         grad_cTG = autograd.grad(self.cTG, g, torch.ones(x.shape[0], 1).to(self.device), retain_graph=True, create_graph=True)[0][:,0].reshape(-1,1)
 
-        loss_cTG_ode = self.loss_function_ode(grad_cTG + self.nn.k1*self.cTG, self.f_hat)
+        loss_cTG_ode = self.loss_function_ode(grad_cTG + self.k1*self.cTG, self.f_hat)
         
         loss_cTG_data = self.loss_function_data(self.cTG, y[:,1].reshape(-1,1))
 

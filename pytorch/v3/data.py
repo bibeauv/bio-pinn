@@ -3,7 +3,7 @@ import torch
 
 import numpy as np
 import pandas as pd
-import scipy
+from scipy import signal
 
 # Set seed
 torch.set_default_dtype(torch.float)
@@ -42,9 +42,9 @@ def read_microwave_temperature(file):
     Q = np.array(P)
 
     # Filter
-    sos = scipy.signal.butter(2, 1/20, btype='lowpass', analog=False, output='sos')
+    sos = signal.butter(2, 1/20, btype='lowpass', analog=False, output='sos')
     Temp_ref = Temp - np.min(Temp)
-    T_filtered = scipy.signal.sosfilt(sos, Temp_ref)
+    T_filtered = signal.sosfilt(sos, Temp_ref)
     T_filtered = T_filtered + np.min(Temp)
 
     return t, T_filtered, Q
