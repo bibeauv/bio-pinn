@@ -50,7 +50,7 @@ for i, PINN in enumerate(PINNs):
 
 # Training
 epoch = 0
-max_epochs = 50000
+max_epochs = 10000
 while epoch < max_epochs:
     vec_loss = np.zeros((1,5))
     # Backward
