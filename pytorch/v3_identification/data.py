@@ -45,7 +45,7 @@ def read_microwave_temperature(file):
     sos = signal.butter(2, 1/30, btype='lowpass', analog=False, output='sos')
     Temp_ref = Temp - np.min(Temp)
     T_filtered = signal.sosfilt(sos, Temp_ref)
-    T_filtered = T_filtered + np.min(Temp)
+    T_filtered = T_filtered #+ np.min(Temp)
 
     return t, T_filtered, Q
 

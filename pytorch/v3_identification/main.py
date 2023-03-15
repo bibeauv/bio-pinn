@@ -88,7 +88,7 @@ cDG_true = Y_train[idx,2]
 cMG_true = Y_train[idx,3]
 cG_true = Y_train[0,4]
 
-y0 = np.array([0.570199408, 38.])
+y0 = np.array([0.570199408, 0.0])
 y_euler = euler_explicite(y0, t, k1_pred,
                           Y_train[:,6])
 
