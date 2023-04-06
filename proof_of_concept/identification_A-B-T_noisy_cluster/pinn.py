@@ -14,7 +14,6 @@ np.random.seed(1234)
 # Params
 NEURONS = 10
 LEARNING_RATE = 1e-3
-PATH = os.getcwd() + '/model.pt'
 
 # PINN architecture
 class PINeuralNet(nn.Module):
@@ -30,9 +29,9 @@ class PINeuralNet(nn.Module):
         self.f3 = nn.Linear(NEURONS, NEURONS)
         self.out = nn.Linear(NEURONS, 3)
 
-        self.E1 = torch.tensor(150., requires_grad=True).float().to(device)
+        self.E1 = torch.tensor(178., requires_grad=True).float().to(device)
         self.A1 = torch.tensor(1., requires_grad=True).float().to(device)
-        self.E2 = torch.tensor(200., requires_grad=True).float().to(device)
+        self.E2 = torch.tensor(74., requires_grad=True).float().to(device)
         self.A2 = torch.tensor(1., requires_grad=True).float().to(device)
 
         self.E1 = nn.Parameter(self.E1)
@@ -158,3 +157,4 @@ class Curiosity():
     def save_model(self, PATH):
          
          torch.save(self.PINN, PATH)
+         

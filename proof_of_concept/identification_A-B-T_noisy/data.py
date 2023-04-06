@@ -2,9 +2,6 @@
 import numpy as np
 import torch
 
-# Set seed
-np.random.seed(1234)
-
 def EDO(y, prm):
 
     k1 = prm.k1
@@ -64,9 +61,6 @@ def create_data(y0, t1, t2, collocation_points, prm, error_percentage):
     y_num[:,0] = n_cA
     y_num[:,1] = n_cB
     y_num[:,2] = n_T
-    # y_num[0,0] = y0[0]
-    # y_num[0,1] = y0[1]
-    # y_num[0,2] = y0[2]
 
     return t.reshape(-1,1), y_num, y_num_no_noise
 
