@@ -60,11 +60,13 @@ def create_data(y0, t1, t2, collocation_points, prm, error_percentage):
     # Add noise
     n_cA = np.random.normal(y_num[:,0], error_percentage*y_num[:,0])
     # n_cB = np.random.normal(y_num[:,1], error_percentage*y_num[:,1])
+    n_T = np.random.normal(y_num[:,2], 0.01*y_num[:,2])
     y_num[:,0] = n_cA
     y_num[:,1] = (n_cA - n_cA[0]) * -1
-    # y_num[:,1] = n_cB
+    y_num[:,2] = n_T
     # y_num[0,0] = y0[0]
     # y_num[0,1] = y0[1]
+    # y_num[0,2] = y0[2]
 
     return t.reshape(-1,1), y_num, y_num_no_noise
 
@@ -74,3 +76,4 @@ def put_in_device(x, y, device):
     Y = torch.from_numpy(y).float().to(device)
 
     return X, Y
+    

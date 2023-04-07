@@ -42,7 +42,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 1000000
+max_epochs = 50000
 vec_loss = []
 check = False
 while epoch <= max_epochs:
