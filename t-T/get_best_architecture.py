@@ -39,9 +39,9 @@ os.chdir(f'{PATH}/{best_case}')
 
 model = torch.load('model.pt')
 
-files = ['exp1.csv']
+files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
 
-collocation_points = 721
+collocation_points = 241
 X, Y, idx, idx_y0 = gather_data(files, collocation_points)
 
 device = torch.device('cpu')
@@ -69,7 +69,7 @@ class parameters():
     Q = 6
     m_Cp = 10
 prm = parameters()
-t_num, y_num = euler(y0, X_train[:721].detach().numpy().flatten(), prm)
+t_num, y_num = euler(y0, np.linspace(0,240,1000), prm)
 
 plt.plot(X_train[idx], Y_train[:,0], 'o', label='Experiments')
 plt.plot(X_train, output[:,0].detach().numpy(), 'o', markersize=1, label='PINN')

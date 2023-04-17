@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 PATH = os.getcwd()
 
-files = ['exp1.csv']
+files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
 
-collocation_points = 181
+collocation_points = 241
 X, Y, idx, idx_y0 = gather_data(files, collocation_points)
 
 device = torch.device('cpu')
@@ -22,7 +22,7 @@ e = 0.5
 c1 = 0.1
 c2 = 0.1
 neurons = 10
-regularization = 1000
+regularization = 500
 
 class parameters():
     m_Cp = 10

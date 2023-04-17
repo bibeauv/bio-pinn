@@ -1,1 +1,1 @@
-Epoch 1000001 	 loss_c_data: 7.2769e-05 	 loss_T_data: 2.7587e-01 	 loss_c_ode: 7.7665e-08 	 loss_T_ode: 2.8766e-06
+Epoch 1000001 	 loss_c_data: 1.8007e-04 	 loss_T_data: 5.3256e-01 	 loss_c_ode: 4.2929e-08 	 loss_T_ode: 3.7818e-06
