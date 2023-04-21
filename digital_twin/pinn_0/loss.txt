@@ -1,0 +1,1 @@
+Epoch 50001 	 loss_c_data: 5.0319e-04 	 loss_c_ode: 7.2834e-06
