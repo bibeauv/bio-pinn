@@ -14,13 +14,13 @@ f_hat = f_hat = torch.zeros(X_train.shape[0], 1).to(device)
 
 # Template
 learning_rate = 1e-3
-E = [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
-A = [0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667]
+E = [97.5, 91.9, 103.9, 82.3, 0., 0.]
+A = [0.38, 0.17, 0.54, 0.22, 0.036, 0.0014]
 neurons = 10
-regularization = 100
+regularization = 5000
 
 class parameters():
-    Q = 6
+    Q = 5
 prm = parameters()
 
 PINN = Curiosity(X_train, Y_train, Z_train, idx, idx_y0, f_hat, learning_rate,
@@ -32,7 +32,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 50000
+max_epochs = 100000
 while epoch <= max_epochs:
 
     PINN.optimizer.step(PINN.closure)
@@ -58,6 +58,9 @@ while epoch <= max_epochs:
 
     if epoch == 20000:
         PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
+        
+    # if PINN.loss_c_ode <= 1e-8:
+    #     break
 
     epoch += 1
     

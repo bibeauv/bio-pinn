@@ -31,7 +31,7 @@ best_case = best_loss_df['case'].to_string(index=False)
 
 print(loss_df)
 
-os.chdir(f'{PATH}/{best_case}')
+os.chdir(f'{PATH}/pinn_0')
 
 model = torch.load('model.pt')
 

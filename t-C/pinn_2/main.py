@@ -6,7 +6,7 @@ PATH = os.getcwd()
 
 files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
 
-X, Y, Z, idx, idx_y0 = gather_data(files, 'T_train.csv', 6.0)
+X, Y, Z, idx, idx_y0 = gather_data(files, 'T_train.csv', 4.0)
 
 device = torch.device('cpu')
 X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
@@ -14,13 +14,13 @@ f_hat = f_hat = torch.zeros(X_train.shape[0], 1).to(device)
 
 # Template
 learning_rate = 1e-3
-E = [189.6, 142.0, 114.8, 105.1, 179.0, 103.5]
-A = [2.79, 0.629, 0.745, 0.367, 2.26, 0.042]
+E = [242.1, 197.8, 245.06, 251.9, 0.0, 0.0]
+A = [8.06, 2.03, 19.76, 6.13, 0.0, 0.011]
 neurons = 10
 regularization = 5000
 
 class parameters():
-    Q = 6
+    Q = 4
 prm = parameters()
 
 PINN = Curiosity(X_train, Y_train, Z_train, idx, idx_y0, f_hat, learning_rate,
@@ -32,7 +32,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 100000
+max_epochs = 200000
 while epoch <= max_epochs:
 
     PINN.optimizer.step(PINN.closure)
@@ -53,14 +53,11 @@ while epoch <= max_epochs:
     if epoch % 1000 == 0:
         print(f'Epoch {epoch} \t loss_c_data: {PINN.loss_c_data:.4e} \t loss_c_ode: {PINN.loss_c_ode:.4e}')
 
-    if epoch == 10000:
+    if epoch == 50000:
         PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
-
-    if epoch == 20000:
-        PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
         
-    # if PINN.loss_c_ode <= 1e-8:
-    #     break
+    if epoch == 80000:
+        PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
     epoch += 1
     

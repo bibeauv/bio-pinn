@@ -31,13 +31,13 @@ best_case = best_loss_df['case'].to_string(index=False)
 
 print(loss_df)
 
-os.chdir(f'{PATH}/pinn_1')
+os.chdir(f'{PATH}/pinn_0')
 
 model = torch.load('model.pt')
 
 files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
 
-X, Y, Z, idx, idx_y0 = gather_data(files, 'T_train.csv', 5.0)
+X, Y, Z, idx, idx_y0 = gather_data(files, 'T_train.csv', 6.0)
 
 device = torch.device('cpu')
 X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
@@ -58,9 +58,9 @@ class parameters():
     E5 = float(model.E5.detach().numpy())
     A6 = float(model.A6.detach().numpy())
     E6 = float(model.E6.detach().numpy())
-    T = Z_train[:361].detach().numpy().flatten()
+    T = Z_train[:241].detach().numpy().flatten()
 prm = parameters()
-t_num, y_num = euler(y0, X_train[:361].detach().numpy().flatten(), prm)
+t_num, y_num = euler(y0, X_train[:241].detach().numpy().flatten(), prm)
 
 plt.plot(X_train[idx], Y_train[:,0], 'o', label='Experiments')
 plt.plot(X_train, output[:,0].detach().numpy(), 'o', markersize=1, label='PINN')
