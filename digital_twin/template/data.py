@@ -45,8 +45,9 @@ def gather_data(files, T_file):
 
     idx = find_idx(t, C)
     idx_y0 = [0]
+    idx_yf = []
 
-    X = np.concatenate((t, Q), axis=1)
+    X = np.concatenate((t, T), axis=1)
     Y = np.copy(C[:,1:])
     Z = np.copy(T)
 
@@ -60,7 +61,7 @@ def gather_data(files, T_file):
 
         new_idx = find_idx(new_t, new_C)
 
-        new_X = np.concatenate((new_t, new_Q), axis=1)
+        new_X = np.concatenate((new_t, new_T), axis=1)
         X = np.concatenate((X, new_X), axis=0)
         Y = np.concatenate((Y, new_C[:,1:]), axis=0)
         Z = np.concatenate((Z, new_T), axis=0)
@@ -69,6 +70,8 @@ def gather_data(files, T_file):
             new_idx[j] = new_idx[j] + len_t
         idx = idx + new_idx
         idx_y0 = idx_y0 + [len_t]
+        if P == 4.0:
+            idx_yf = idx_yf + [new_idx[-1]]
         len_t += len(new_t)
         
-    return X, Y, Z, idx, idx_y0
+    return X, Y, Z, idx, idx_y0, idx_yf

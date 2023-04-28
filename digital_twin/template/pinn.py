@@ -82,7 +82,7 @@ class PINeuralNet(nn.Module):
 # Full PINN to discover k
 class Curiosity():
 
-    def __init__(self, X, Y, Z, idx, idx_y0, f_hat, learning_rate, E, A, neurons, regularization, device, prm):
+    def __init__(self, X, Y, Z, idx, idx_y0, idx_yf, f_hat, learning_rate, E, A, neurons, regularization, device, prm):
         
         def loss_function_ode(output, target):
             
@@ -99,6 +99,12 @@ class Curiosity():
         def loss_function_IC(output, target):
 
             loss = torch.mean((output[idx_y0] - target[0])**2)
+
+            return loss
+        
+        def loss_function_FC(output, target):
+
+            loss = torch.mean((output[idx_yf] - target[-1])**2)
 
             return loss
         
@@ -129,6 +135,7 @@ class Curiosity():
         self.loss_function_ode = loss_function_ode
         self.loss_function_data = loss_function_data
         self.loss_function_IC = loss_function_IC
+        self.loss_function_FC = loss_function_FC
         self.f_hat = f_hat
         self.regularization = regularization
 
@@ -144,7 +151,7 @@ class Curiosity():
         g = x.clone()
         g.requires_grad = True
 
-        Q = g[:,1].reshape(-1,1)
+        T = g[:,1].reshape(-1,1)
 
         y = self.PINN(g)
         cTG = y[:,0].reshape(-1,1)
@@ -153,7 +160,7 @@ class Curiosity():
         cG = y[:,3].reshape(-1,1)
         cME = y[:,4].reshape(-1,1)
 
-        T = self.z
+        # T = self.z
         
         k1 = self.PINN.A1 + self.PINN.E1 * (T - T[0])
         k2 = self.PINN.A2 + self.PINN.E2 * (T - T[0])
@@ -194,8 +201,8 @@ class Curiosity():
         self.loss_cTG_data = self.loss_function_data(cTG, y_train[:,0].reshape(-1,1))
         self.loss_cDG_data = self.loss_function_data(cDG, y_train[:,1].reshape(-1,1))
         self.loss_cMG_data = self.loss_function_data(cMG, y_train[:,2].reshape(-1,1))
-        self.loss_cG_data = self.loss_function_IC(cG, y_train[:,3].reshape(-1,1))
-        self.loss_cME_data = self.loss_function_IC(cME, y_train[:,4].reshape(-1,1))
+        self.loss_cG_data = self.loss_function_IC(cG, y_train[:,3].reshape(-1,1)) + self.loss_function_FC(cG, y_train[:,3].reshape(-1,1))
+        self.loss_cME_data = self.loss_function_IC(cME, y_train[:,4].reshape(-1,1)) + self.loss_function_FC(cME, y_train[:,4].reshape(-1,1))
 
         # self.loss_T_ode = self.loss_function_ode(self.prm.m_Cp*grad_T - self.PINN.e*Q - self.PINN.c1*T - self.PINN.c2, self.f_hat)
         
