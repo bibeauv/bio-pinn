@@ -4,22 +4,21 @@ import os
 
 PATH = os.getcwd()
 
-files = ['exp1.csv', 'exp2.csv']
+files = ['exp1_6W.csv', 'exp2_6W.csv', 'exp3_6W.csv',
+         #'exp1_5W.csv', 'exp2_5W.csv', 'exp3_5W.csv',
+         'exp1_4W.csv', 'exp2_4W.csv', 'exp3_4W.csv']
 
-X, Y, idx, idx_y0 = gather_data(files)
+X, Y, Z, idx, idx_y0, idx_yf = gather_data(files, 'T_train.csv')
 
 device = torch.device('cpu')
-X_train, Y_train = put_in_device(X, Y, device)
+X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
 f_hat = f_hat = torch.zeros(X_train.shape[0], 1).to(device)
 
 # Template
 learning_rate = 1e-3
 E = [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
 A = [0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667]
-e = 0.5
-c1 = 0.1
-c2 = 0.1
-neurons = 50
+neurons = 10
 regularization = 1000
 
 class parameters():
@@ -27,8 +26,8 @@ class parameters():
     m_Cp = 10
 prm = parameters()
 
-PINN = Curiosity(X_train, Y_train, idx, idx_y0, f_hat, learning_rate,
-                 E, A, e, c1, c2,
+PINN = Curiosity(X_train, Y_train, Z_train, idx, idx_y0, idx_yf, f_hat, learning_rate,
+                 E, A,
                  neurons, regularization, device, prm)
 
 # Make all outputs positive
@@ -36,37 +35,42 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 20000
+max_epochs = 1000000
 while epoch <= max_epochs:
 
-    PINN.optimizer.step(PINN.closure)
+    try:
 
-    PINN.PINN.E1.data.clamp_(min=0.)
-    PINN.PINN.A1.data.clamp_(min=0.)
-    PINN.PINN.E2.data.clamp_(min=0.)
-    PINN.PINN.A2.data.clamp_(min=0.)
-    PINN.PINN.E3.data.clamp_(min=0.)
-    PINN.PINN.A3.data.clamp_(min=0.)
-    PINN.PINN.E4.data.clamp_(min=0.)
-    PINN.PINN.A4.data.clamp_(min=0.)
-    PINN.PINN.E5.data.clamp_(min=0.)
-    PINN.PINN.A5.data.clamp_(min=0.)
-    PINN.PINN.E6.data.clamp_(min=0.)
-    PINN.PINN.A6.data.clamp_(min=0.)
+        PINN.optimizer.step(PINN.closure)
 
-    if epoch % 1000 == 0:
-        print(f'Epoch {epoch} \t loss_c_data: {PINN.loss_c_data:.4e} \t loss_c_ode: {PINN.loss_c_ode:.4e} \t loss_T_data: {PINN.loss_T_data:.4e} \t loss_T_ode: {PINN.loss_T_ode:.4e}')
+        PINN.PINN.E1.data.clamp_(min=0.)
+        PINN.PINN.A1.data.clamp_(min=0.)
+        PINN.PINN.E2.data.clamp_(min=0.)
+        PINN.PINN.A2.data.clamp_(min=0.)
+        PINN.PINN.E3.data.clamp_(min=0.)
+        PINN.PINN.A3.data.clamp_(min=0.)
+        PINN.PINN.E4.data.clamp_(min=0.)
+        PINN.PINN.A4.data.clamp_(min=0.)
+        PINN.PINN.E5.data.clamp_(min=0.)
+        PINN.PINN.A5.data.clamp_(min=0.)
+        PINN.PINN.E6.data.clamp_(min=0.)
+        PINN.PINN.A6.data.clamp_(min=0.)
 
-    # if epoch == 15000:
-    #     PINN.optimzer = torch.optim.Adam(PINN.params, lr=1e-4)
+        if epoch % 1000 == 0:
+            print(f'Epoch {epoch} \t loss_c_data: {PINN.loss_c_data:.4e} \t loss_c_ode: {PINN.loss_c_ode:.4e}')
 
-    if epoch == 500000:
-        PINN.optimzer = torch.optim.Adam(PINN.params, lr=1e-5)
+        if epoch == 20000:
+            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
-    if epoch == 800000:
-        PINN.optimzer = torch.optim.Adam(PINN.params, lr=1e-6)
+        if epoch == 50000:
+            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
 
-    epoch += 1
+        if epoch == 500000:
+            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-6)
+
+        epoch += 1
+
+    except KeyboardInterrupt:
+        break
     
 torch.save(PINN.PINN, PATH + '/model.pt')
 

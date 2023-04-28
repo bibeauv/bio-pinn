@@ -11,18 +11,18 @@ def EDO(y, Ti, prm):
     cME = y[4]
 
     T = prm.T
-    k1 = prm.A1 * np.exp(-prm.E1 / Ti)
-    k2 = prm.A2 * np.exp(-prm.E2 / Ti)
-    k3 = prm.A3 * np.exp(-prm.E3 / Ti)
-    k4 = prm.A4 * np.exp(-prm.E4 / Ti)
-    k5 = prm.A5 * np.exp(-prm.E5 / Ti)
-    k6 = prm.A6 * np.exp(-prm.E6 / Ti)
-    # k1 = prm.A1 + prm.E1 * (Ti - T[0])
-    # k2 = prm.A2 + prm.E2 * (Ti - T[0])
-    # k3 = prm.A3 + prm.E3 * (Ti - T[0])
-    # k4 = prm.A4 + prm.E4 * (Ti - T[0])
-    # k5 = prm.A5 + prm.E5 * (Ti - T[0])
-    # k6 = prm.A6 + prm.E6 * (Ti - T[0])
+    #k1 = prm.A1 * np.exp(-prm.E1 / Ti)
+    #k2 = prm.A2 * np.exp(-prm.E2 / Ti)
+    #k3 = prm.A3 * np.exp(-prm.E3 / Ti)
+    #k4 = prm.A4 * np.exp(-prm.E4 / Ti)
+    #k5 = prm.A5 * np.exp(-prm.E5 / Ti)
+    #k6 = prm.A6 * np.exp(-prm.E6 / Ti)
+    k1 = prm.A1 + prm.E1 * (Ti - T[0])
+    k2 = prm.A2 + prm.E2 * (Ti - T[0])
+    k3 = prm.A3 + prm.E3 * (Ti - T[0])
+    k4 = prm.A4 + prm.E4 * (Ti - T[0])
+    k5 = prm.A5 + prm.E5 * (Ti - T[0])
+    k6 = prm.A6 + prm.E6 * (Ti - T[0])
 
     f[0] = - k1 * cTG + k2 * cDG * cME
     f[1] = + k1 * cTG - k2 * cDG * cME - k3 * cDG + k4 * cMG * cME

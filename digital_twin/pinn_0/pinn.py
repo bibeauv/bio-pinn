@@ -14,7 +14,7 @@ np.random.seed(1234)
 # PINN architecture
 class PINeuralNet(nn.Module):
 
-    def __init__(self, device, E, A, e, c1, c2, neurons):
+    def __init__(self, device, E, A, neurons):
 
         super().__init__()
 
@@ -23,7 +23,7 @@ class PINeuralNet(nn.Module):
         self.f1 = nn.Linear(2, neurons)
         self.f2 = nn.Linear(neurons, neurons)
         self.f3 = nn.Linear(neurons, neurons)
-        self.out = nn.Linear(neurons, 6)
+        self.out = nn.Linear(neurons, 5)
 
         self.E1 = torch.tensor(E[0], requires_grad=True).float().to(device)
         self.E2 = torch.tensor(E[1], requires_grad=True).float().to(device)
@@ -53,13 +53,13 @@ class PINeuralNet(nn.Module):
         self.A5 = nn.Parameter(self.A5)
         self.A6 = nn.Parameter(self.A6)
 
-        self.e = torch.tensor(e, requires_grad=True).float().to(device)
-        self.c1 = torch.tensor(c1, requires_grad=True).float().to(device)
-        self.c2 = torch.tensor(c2, requires_grad=True).float().to(device)
+        # self.e = torch.tensor(e, requires_grad=True).float().to(device)
+        # self.c1 = torch.tensor(c1, requires_grad=True).float().to(device)
+        # self.c2 = torch.tensor(c2, requires_grad=True).float().to(device)
 
-        self.e = nn.Parameter(self.e)
-        self.c1 = nn.Parameter(self.c1)
-        self.c2 = nn.Parameter(self.c2)
+        # self.e = nn.Parameter(self.e)
+        # self.c1 = nn.Parameter(self.c1)
+        # self.c2 = nn.Parameter(self.c2)
 
     def forward(self, x):
 
@@ -82,7 +82,7 @@ class PINeuralNet(nn.Module):
 # Full PINN to discover k
 class Curiosity():
 
-    def __init__(self, X, Y, idx, idx_y0, f_hat, learning_rate, E, A, e, c1, c2, neurons, regularization, device, prm):
+    def __init__(self, X, Y, Z, idx, idx_y0, idx_yf, f_hat, learning_rate, E, A, neurons, regularization, device, prm):
         
         def loss_function_ode(output, target):
             
@@ -102,7 +102,13 @@ class Curiosity():
 
             return loss
         
-        self.PINN = PINeuralNet(device, E, A, e, c1, c2, neurons).to(device)
+        def loss_function_FC(output, target):
+
+            loss = torch.mean((output[idx_yf] - target[-1])**2)
+
+            return loss
+        
+        self.PINN = PINeuralNet(device, E, A, neurons).to(device)
 
         self.PINN.register_parameter('E1', self.PINN.E1)
         self.PINN.register_parameter('E2', self.PINN.E2)
@@ -118,16 +124,18 @@ class Curiosity():
         self.PINN.register_parameter('A5', self.PINN.A5)
         self.PINN.register_parameter('A6', self.PINN.A6)
 
-        self.PINN.register_parameter('e', self.PINN.e)
-        self.PINN.register_parameter('c1', self.PINN.c1)
-        self.PINN.register_parameter('c2', self.PINN.c2)
+        # self.PINN.register_parameter('e', self.PINN.e)
+        # self.PINN.register_parameter('c1', self.PINN.c1)
+        # self.PINN.register_parameter('c2', self.PINN.c2)
 
         self.x = X
         self.y = Y
+        self.z = Z
 
         self.loss_function_ode = loss_function_ode
         self.loss_function_data = loss_function_data
         self.loss_function_IC = loss_function_IC
+        self.loss_function_FC = loss_function_FC
         self.f_hat = f_hat
         self.regularization = regularization
 
@@ -143,7 +151,7 @@ class Curiosity():
         g = x.clone()
         g.requires_grad = True
 
-        Q = g[:,1].reshape(-1,1)
+        T = g[:,1].reshape(-1,1)
 
         y = self.PINN(g)
         cTG = y[:,0].reshape(-1,1)
@@ -151,7 +159,8 @@ class Curiosity():
         cMG = y[:,2].reshape(-1,1)
         cG = y[:,3].reshape(-1,1)
         cME = y[:,4].reshape(-1,1)
-        T = y[:,5].reshape(-1,1)
+
+        # T = self.z
         
         k1 = self.PINN.A1 + self.PINN.E1 * (T - T[0])
         k2 = self.PINN.A2 + self.PINN.E2 * (T - T[0])
@@ -175,9 +184,9 @@ class Curiosity():
         grad_cME = autograd.grad(cME, g, torch.ones(x.shape[0], 1).to(self.device), \
                                  retain_graph=True, create_graph=True) \
                                  [0][:,0].reshape(-1,1)
-        grad_T = autograd.grad(T, g, torch.ones(x.shape[0], 1).to(self.device), \
-                               retain_graph=True, create_graph=True) \
-                               [0][:,0].reshape(-1,1)
+        # grad_T = autograd.grad(T, g, torch.ones(x.shape[0], 1).to(self.device), \
+        #                        retain_graph=True, create_graph=True) \
+        #                        [0][:,0].reshape(-1,1)
 
         self.loss_cTG_ode = self.loss_function_ode(grad_cTG + k1*cTG - k2*cDG*cME, self.f_hat)
         self.loss_cDG_ode = self.loss_function_ode(grad_cDG - k1*cTG + k2*cDG*cME \
@@ -192,23 +201,17 @@ class Curiosity():
         self.loss_cTG_data = self.loss_function_data(cTG, y_train[:,0].reshape(-1,1))
         self.loss_cDG_data = self.loss_function_data(cDG, y_train[:,1].reshape(-1,1))
         self.loss_cMG_data = self.loss_function_data(cMG, y_train[:,2].reshape(-1,1))
+        self.loss_cG_data = self.loss_function_IC(cG, y_train[:,3].reshape(-1,1)) + self.loss_function_FC(cG, y_train[:,3].reshape(-1,1))
+        self.loss_cME_data = self.loss_function_IC(cME, y_train[:,4].reshape(-1,1)) + self.loss_function_FC(cME, y_train[:,4].reshape(-1,1))
 
-        self.loss_cTG_IC = self.loss_function_IC(cTG, y_train[:,0].reshape(-1,1))
-        self.loss_cDG_IC = self.loss_function_IC(cDG, y_train[:,1].reshape(-1,1))
-        self.loss_cMG_IC = self.loss_function_IC(cMG, y_train[:,2].reshape(-1,1))
-        self.loss_cG_IC = self.loss_function_IC(cG, y_train[:,3].reshape(-1,1))
-        self.loss_cME_IC = self.loss_function_IC(cME, y_train[:,4].reshape(-1,1))
-        self.loss_T_IC = self.loss_function_IC(T, y_train[:,5].reshape(-1,1))
-
-        self.loss_T_ode = self.loss_function_ode(self.prm.m_Cp*grad_T - self.PINN.e*Q - self.PINN.c1*T - self.PINN.c2, self.f_hat)
+        # self.loss_T_ode = self.loss_function_ode(self.prm.m_Cp*grad_T - self.PINN.e*Q - self.PINN.c1*T - self.PINN.c2, self.f_hat)
         
-        self.loss_T_data = self.loss_function_data(T, y_train[:,5].reshape(-1,1))
+        # self.loss_T_data = self.loss_function_data(T, y_train[:,5].reshape(-1,1))
 
-        self.loss_c_data = self.loss_cTG_data + self.loss_cDG_data + self.loss_cMG_data
+        self.loss_c_data = self.loss_cTG_data + self.loss_cDG_data + self.loss_cMG_data + self.loss_cG_data + self.loss_cME_data
         self.loss_c_ode = self.loss_cTG_ode + self.loss_cDG_ode + self.loss_cMG_ode + self.loss_cG_ode + self.loss_cME_ode
-        self.loss_IC = self.loss_cTG_IC + self.loss_cDG_IC + self.loss_cMG_IC + self.loss_cG_IC + self.loss_cME_IC + self.loss_T_IC
         
-        self.total_loss = self.regularization * (self.loss_c_ode + self.loss_IC) + self.loss_c_data + self.loss_T_data + self.loss_T_ode
+        self.total_loss = self.regularization * self.loss_c_ode + self.loss_c_data #+ self.loss_T_data + self.loss_T_ode
         
         return self.total_loss
     
