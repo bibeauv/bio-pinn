@@ -5,21 +5,22 @@ import os
 PATH = os.getcwd()
 
 files = ['exp1_6W.csv', 'exp2_6W.csv', 'exp3_6W.csv',
-         #'exp1_5W.csv', 'exp2_5W.csv', 'exp3_5W.csv',
+         'exp1_5W.csv', 'exp2_5W.csv', 'exp3_5W.csv',
          'exp1_4W.csv', 'exp2_4W.csv', 'exp3_4W.csv']
 
 X, Y, Z, idx, idx_y0, idx_yf = gather_data(files, 'T_train.csv')
 
 device = torch.device('cpu')
 X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
-f_hat = f_hat = torch.zeros(X_train.shape[0], 1).to(device)
+f_hat = torch.zeros(X_train.shape[0], 1).to(device)
 
 # Template
 learning_rate = 1e-3
-E = [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
-A = [0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667]
-neurons = 10
-regularization = 1000
+E = [1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4]
+A = [1/240, 1/240, 1/240, 1/240, 1/240, 1/240]
+neurons = {{neurons}}
+layers = {{layers}}
+regularization = 2
 
 class parameters():
     Q = 6
@@ -35,7 +36,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 1000000
+max_epochs = 100000
 while epoch <= max_epochs:
 
     try:
@@ -58,14 +59,17 @@ while epoch <= max_epochs:
         if epoch % 1000 == 0:
             print(f'Epoch {epoch} \t loss_c_data: {PINN.loss_c_data:.4e} \t loss_c_ode: {PINN.loss_c_ode:.4e}')
 
-        if epoch == 20000:
+        if epoch == 5000:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
-        if epoch == 50000:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
+        if epoch == 25000:
+            PINN.regularization = 20
 
-        if epoch == 500000:
-            PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-6)
+        if epoch == 50000:
+            PINN.regularization = 200
+
+        if epoch == 75000:
+            PINN.regularization = 2000
 
         epoch += 1
 

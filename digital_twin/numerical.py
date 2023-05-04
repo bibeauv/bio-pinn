@@ -20,6 +20,13 @@ def EDO(y, prm, i):
     k5 = prm.A5 + prm.E5 * (Ti - T[0])
     k6 = prm.A6 + prm.E6 * (Ti - T[0])
 
+    # k1 = prm.A1 * np.exp(-prm.E1 / Ti)
+    # k2 = prm.A2 * np.exp(-prm.E2 / Ti)
+    # k3 = prm.A3 * np.exp(-prm.E3 / Ti)
+    # k4 = prm.A4 * np.exp(-prm.E4 / Ti)
+    # k5 = prm.A5 * np.exp(-prm.E5 / Ti)
+    # k6 = prm.A6 * np.exp(-prm.E6 / Ti)
+
     f[0] = - k1 * cTG + k2 * cDG * cME
     f[1] = + k1 * cTG - k2 * cDG * cME - k3 * cDG + k4 * cMG * cME
     f[2] = + k3 * cDG - k4 * cMG * cME - k5 * cMG + k6 * cG * cME

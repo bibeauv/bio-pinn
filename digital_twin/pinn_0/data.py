@@ -47,8 +47,10 @@ def gather_data(files, T_file):
     idx_y0 = [0]
     idx_yf = []
 
-    X = np.concatenate((t, T), axis=1)
-    Y = np.copy(C[:,1:])
+    X = np.concatenate((t, Q), axis=1)
+    Y = np.zeros((X.shape[0], C[:,1:].shape[1]))
+    for i in range(Y.shape[1]):
+        Y[idx,i] = C[:,i+1]
     Z = np.copy(T)
 
     len_t = len(t)
@@ -61,17 +63,21 @@ def gather_data(files, T_file):
 
         new_idx = find_idx(new_t, new_C)
 
-        new_X = np.concatenate((new_t, new_T), axis=1)
+        new_X = np.concatenate((new_t, new_Q), axis=1)
         X = np.concatenate((X, new_X), axis=0)
-        Y = np.concatenate((Y, new_C[:,1:]), axis=0)
+        new_Y = np.zeros((new_X.shape[0], new_C[:,1:].shape[1]))
+        for k in range(new_Y.shape[1]):
+            new_Y[new_idx,k] = new_C[:,k+1]
+        Y = np.concatenate((Y, new_Y), axis=0)
         Z = np.concatenate((Z, new_T), axis=0)
 
         for j in range(len(new_idx)):
             new_idx[j] = new_idx[j] + len_t
+        # if P == 4.0:
         idx = idx + new_idx
+        # elif P == 5.0 or P == 6.0:
+        #     idx = idx + [new_idx[0]]
         idx_y0 = idx_y0 + [len_t]
-        if P == 4.0:
-            idx_yf = idx_yf + [new_idx[-1]]
         len_t += len(new_t)
         
     return X, Y, Z, idx, idx_y0, idx_yf
