@@ -4,9 +4,9 @@ import os
 
 PATH = os.getcwd()
 
-files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
+files = ['T_train.csv']
 
-X, Y, idx, idx_y0 = gather_data(files)
+X, Y = gather_data(files)
 
 device = torch.device('cpu')
 X_train, Y_train = put_in_device(X, Y, device)
@@ -18,13 +18,13 @@ e = 0.5
 c1 = 0.1
 c2 = 0.1
 neurons = 10
-regularization = 50
+regularization = 1
 
 class parameters():
     m_Cp = 10
 prm = parameters()
 
-PINN = Curiosity(X_train, Y_train, idx, idx_y0, f_hat, learning_rate,
+PINN = Curiosity(X_train, Y_train, f_hat, learning_rate,
                  e, c1, c2,
                  neurons, regularization, device, prm)
 
@@ -33,7 +33,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 200000
+max_epochs = 100000
 while epoch <= max_epochs:
 
     PINN.optimizer.step(PINN.closure)
@@ -42,11 +42,11 @@ while epoch <= max_epochs:
         print(f'Epoch {epoch} \t loss_T_data: {PINN.loss_T_data:.4e} \t loss_T_ode: {PINN.loss_T_ode:.4e}')
 
     if epoch == 20000:
-        PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
-
-    if epoch == 50000:
-        PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
-
+        PINN.optimzer = torch.optim.Adam(PINN.params, lr=1e-4)
+        
+    if epoch == 80000:
+        PINN.optimzer = torch.optim.Adam(PINN.params, lr=1e-5)
+    
     epoch += 1
     
 torch.save(PINN.PINN, PATH + '/model.pt')

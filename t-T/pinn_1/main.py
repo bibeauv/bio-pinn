@@ -4,10 +4,9 @@ import os
 
 PATH = os.getcwd()
 
-files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
+files = ['T_train.csv']
 
-collocation_points = 601
-X, Y, idx, idx_y0 = gather_data(files, collocation_points)
+X, Y, idx, idx_y0 = gather_data(files)
 
 device = torch.device('cpu')
 X_train, Y_train = put_in_device(X, Y, device)
@@ -23,7 +22,6 @@ regularization = 1
 
 class parameters():
     m_Cp = 10
-    Q = 6
 prm = parameters()
 
 PINN = Curiosity(X_train, Y_train, idx, idx_y0, f_hat, learning_rate,

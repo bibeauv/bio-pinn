@@ -4,7 +4,7 @@ import os
 
 PATH = os.getcwd()
 
-files = ['exp1.csv', 'exp2.csv', 'exp3.csv']
+files = ['T_train.csv']
 
 X, Y, idx, idx_y0 = gather_data(files)
 
