@@ -9,37 +9,26 @@ TEMPLATE_PATH = PATH + '/template'
 MAIN_FILE = 'main.py'
 CASE_PREFIX = 'pinn_'
 
-number_of_cases = 2
+number_of_cases = 10
 
-k = lhs(12, number_of_cases)
+k = lhs(2, number_of_cases)
 
-E_min = 1e-4
-E_max = 1e-4
+n_min = 10
+n_max = 100
 
-A_min = 1/240
-A_max = 1/240
+l_min = 2
+l_max = 4
 
-E1 = k[:,0]*(E_max - E_min) + E_min
-E2 = k[:,1]*(E_max - E_min) + E_min
-E3 = k[:,2]*(E_max - E_min) + E_min
-E4 = k[:,3]*(E_max - E_min) + E_min
-E5 = k[:,4]*(E_max - E_min) + E_min
-E6 = k[:,5]*(E_max - E_min) + E_min
-
-A1 = k[:,0]*(A_max - A_min) + A_min
-A2 = k[:,1]*(A_max - A_min) + A_min
-A3 = k[:,2]*(A_max - A_min) + A_min
-A4 = k[:,3]*(A_max - A_min) + A_min
-A5 = k[:,4]*(A_max - A_min) + A_min
-A6 = k[:,5]*(A_max - A_min) + A_min
+neurons = np.round(k[:,0]*(n_max - n_min) + n_min, -1).astype(int)
+layers = np.round(k[:,1]*(l_max - l_min) + l_min).astype(int)
 
 templateLoader = jinja2.FileSystemLoader(searchpath=TEMPLATE_PATH)
 templateEnv = jinja2.Environment(loader=templateLoader)
 template = templateEnv.get_template(MAIN_FILE)
 
 for case in range(number_of_cases):
-    parameters = template.render(E=[E1[case], E2[case], E3[case], E4[case], E5[case], E6[case]],
-                                 A=[A1[case], A2[case], A3[case], A4[case], A5[case], A6[case]])
+    parameters = template.render(neurons=neurons[case],
+                                 layers=layers[case])
     
     case_folder_name = f'{CASE_PREFIX}{case}'
     case_path = f'{PATH}/{case_folder_name}'

@@ -1,15 +1,18 @@
+import os
+
+PATH = os.getcwd()
+
+best_case = 'pinn_2'
+
+os.chdir(f'{PATH}/{best_case}')
+os.system('cp pinn.py ../.')
+os.system('cp data.py ../.')
+
 from pinn import *
 from data import *
 from numerical import *
 import torch
-import os
 import matplotlib.pyplot as plt
-
-PATH = os.getcwd()
-
-best_case = 'pinn_0'
-
-os.chdir(f'{PATH}/{best_case}')
 
 model = torch.load('model.pt')
 
@@ -24,7 +27,7 @@ X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
 
 output = model(X_train)
 
-y0 = np.array([0.596600966,0.038550212,0.000380326,0,0])
+y0 = np.array([0.61911421,0.040004937,0.000394678,0.0,0.0])
 class parameters():
     # e = float(model.e.detach().numpy())
     # c1 = float(model.c1.detach().numpy())
@@ -41,42 +44,42 @@ class parameters():
     E5 = float(model.E5.detach().numpy())
     A6 = float(model.A6.detach().numpy())
     E6 = float(model.E6.detach().numpy())
-    T = Z_train[1806:2407].detach().numpy()
+    T = Z_train[:241].detach().numpy()
     # Q = 6
     # m_Cp = 10
 prm = parameters()
-t_num, y_num = euler(y0, X_train[1806:2407,0].detach().numpy(), prm)
+t_num, y_num = euler(y0, X_train[:241,0].detach().numpy(), prm)
 
-plt.plot(X_train[idx[:12],0], Y_train[:12,0], 'o', label='Experiments 6W')
-plt.plot(X_train[idx[12:27],0], Y_train[12:27,0], 'o', label='Experiments 5W')
-plt.plot(X_train[idx[27:45],0], Y_train[27:45,0], 'o', label='Experiments 4W')
+plt.plot(X_train[idx[:12],0], Y_train[idx[:12],0], 'o', label='Experiments 6W')
+plt.plot(X_train[idx[12:27],0], Y_train[idx[12:27],0], 'o', label='Experiments 5W')
+plt.plot(X_train[idx[27:45],0], Y_train[idx[27:45],0], 'o', label='Experiments 4W')
 plt.plot(X_train[:241,0], output[:241,0].detach().numpy(), 'o', markersize=1, label='PINN 6W')
 plt.plot(X_train[723:1084,0], output[723:1084,0].detach().numpy(), 'o', markersize=1, label='PINN 5W')
-plt.plot(X_train[1806:2407,0], output[1806:2407,0].detach().numpy(), 'o', markersize=1, label='PINN 4W')
+plt.plot(X_train[1806:2406,0], output[1806:2406,0].detach().numpy(), 'o', markersize=1, label='PINN 4W')
 plt.plot(t_num, y_num[:,0], '--', label='Numerical')
 plt.xlabel('Time [sec]')
 plt.ylabel('TG Concentration [mol/L]')
 plt.legend()
 plt.show()
 
-plt.plot(X_train[idx[:12],0], Y_train[:12,1], 'o', label='Experiments 6W')
-plt.plot(X_train[idx[12:27],0], Y_train[12:27,1], 'o', label='Experiments 5W')
-plt.plot(X_train[idx[27:45],0], Y_train[27:45,1], 'o', label='Experiments 4W')
+plt.plot(X_train[idx[:12],0], Y_train[idx[:12],1], 'o', label='Experiments 6W')
+plt.plot(X_train[idx[12:27],0], Y_train[idx[12:27],1], 'o', label='Experiments 5W')
+plt.plot(X_train[idx[27:45],0], Y_train[idx[27:45],1], 'o', label='Experiments 4W')
 plt.plot(X_train[:241,0], output[:241,1].detach().numpy(), 'o', markersize=1, label='PINN 6W')
 plt.plot(X_train[723:1084,0], output[723:1084,1].detach().numpy(), 'o', markersize=1, label='PINN 5W')
-plt.plot(X_train[1806:2407,0], output[1806:2407,1].detach().numpy(), 'o', markersize=1, label='PINN 4W')
+plt.plot(X_train[1806:2406,0], output[1806:2406,1].detach().numpy(), 'o', markersize=1, label='PINN 4W')
 plt.plot(t_num, y_num[:,1], '--', label='Numerical')
 plt.xlabel('Time [sec]')
 plt.ylabel('DG Concentration [mol/L]')
 plt.legend()
 plt.show()
 
-plt.plot(X_train[idx[:12],0], Y_train[:12,2], 'o', label='Experiments 6W')
-plt.plot(X_train[idx[12:27],0], Y_train[12:27,2], 'o', label='Experiments 5W')
-plt.plot(X_train[idx[27:45],0], Y_train[27:45,2], 'o', label='Experiments 4W')
+plt.plot(X_train[idx[:12],0], Y_train[idx[:12],2], 'o', label='Experiments 6W')
+plt.plot(X_train[idx[12:27],0], Y_train[idx[12:27],2], 'o', label='Experiments 5W')
+plt.plot(X_train[idx[27:45],0], Y_train[idx[27:45],2], 'o', label='Experiments 4W')
 plt.plot(X_train[:241,0], output[:241,2].detach().numpy(), 'o', markersize=1, label='PINN 6W')
 plt.plot(X_train[723:1084,0], output[723:1084,2].detach().numpy(), 'o', markersize=1, label='PINN 5W')
-plt.plot(X_train[1806:2407,0], output[1806:2407,2].detach().numpy(), 'o', markersize=1, label='PINN 4W')
+plt.plot(X_train[1806:2406,0], output[1806:2406,2].detach().numpy(), 'o', markersize=1, label='PINN 4W')
 plt.plot(t_num, y_num[:,2], '--', label='Numerical')
 plt.xlabel('Time [sec]')
 plt.ylabel('MG Concentration [mol/L]')
@@ -85,7 +88,7 @@ plt.show()
 
 plt.plot(X_train[:241,0], output[:241,3].detach().numpy(), 'o', markersize=1, label='PINN 6W')
 plt.plot(X_train[723:1084,0], output[723:1084,3].detach().numpy(), 'o', markersize=1, label='PINN 5W')
-plt.plot(X_train[1806:2407,0], output[1806:2407,3].detach().numpy(), 'o', markersize=1, label='PINN 4W')
+plt.plot(X_train[1806:2406,0], output[1806:2406,3].detach().numpy(), 'o', markersize=1, label='PINN 4W')
 plt.plot(t_num, y_num[:,3], '--', label='Numerical')
 plt.xlabel('Time [sec]')
 plt.ylabel('G Concentration [mol/L]')
@@ -94,7 +97,7 @@ plt.show()
 
 plt.plot(X_train[:241,0], output[:241,4].detach().numpy(), 'o', markersize=1, label='PINN 6W')
 plt.plot(X_train[723:1084,0], output[723:1084,4].detach().numpy(), 'o', markersize=1, label='PINN 5W')
-plt.plot(X_train[1806:2407,0], output[1806:2407,4].detach().numpy(), 'o', markersize=1, label='PINN 4W')
+plt.plot(X_train[1806:2406,0], output[1806:2406,4].detach().numpy(), 'o', markersize=1, label='PINN 4W')
 plt.plot(t_num, y_num[:,4], '--', label='Numerical')
 plt.xlabel('Time [sec]')
 plt.ylabel('ME Concentration [mol/L]')

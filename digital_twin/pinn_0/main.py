@@ -12,13 +12,14 @@ X, Y, Z, idx, idx_y0, idx_yf = gather_data(files, 'T_train.csv')
 
 device = torch.device('cpu')
 X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
-f_hat = f_hat = torch.zeros(X_train.shape[0], 1).to(device)
+f_hat = torch.zeros(X_train.shape[0], 1).to(device)
 
 # Template
 learning_rate = 1e-3
-E = [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
-A = [0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667, 0.004166666666666667]
-neurons = 10
+E = [1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4]
+A = [1/240, 1/240, 1/240, 1/240, 1/240, 1/240]
+neurons = 100
+layers = 3
 regularization = 2
 
 class parameters():
@@ -35,7 +36,7 @@ for i, p in enumerate(PINN.PINN.parameters()):
     p.data.clamp_(min=0.)
 
 epoch = 0
-max_epochs = 25000
+max_epochs = 100000
 while epoch <= max_epochs:
 
     try:
@@ -61,11 +62,14 @@ while epoch <= max_epochs:
         if epoch == 5000:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
-        # if epoch == 50000:
-        #     PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
+        if epoch == 25000:
+            PINN.regularization = 20
 
-        # if epoch == 500000:
-        #     PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-6)
+        if epoch == 50000:
+            PINN.regularization = 200
+
+        if epoch == 75000:
+            PINN.regularization = 2000
 
         epoch += 1
 
