@@ -36,30 +36,14 @@ def put_in_device(x, y, device):
 def gather_data(files):
     
     C = read_data(files[0])
-    t = np.linspace(C[0,0], C[-1,0], int(C[-1,0])+1)
-    Q = np.linspace(C[0,1], C[-1,1], int(C[-1,1])+1)
+    t = C[:,0].reshape(-1,1)
+    Q = C[:,1].reshape(-1,1)
+    T = C[:,2].reshape(-1,1)
 
     idx = find_idx(t, C)
     idx_y0 = [0]
 
-    X = np.concatenate((t.reshape(-1,1), Q.reshape(-1,1)), axis=1)
-    Y = np.copy(C[:,-1]).reshape(-1,1)
-
-    len_t = len(t)
-    for i in range(1,len(files)):
-        new_C = read_data(files[i])
-        new_t = np.linspace(new_C[0,0], new_C[-1,0], int(C[-1,0])+1)
-        new_Q = np.linspace(new_C[0,1], new_C[-1,1], int(C[-1,1])+1)
-        new_idx = find_idx(new_t, new_C)
-
-        new_X = np.concatenate((new_t.reshape(-1,1), new_Q.reshape(-1,1)), axis=1)
-        X = np.concatenate((X, new_X), axis=0)
-        Y = np.concatenate((Y, new_C[:,-1]), axis=0)
-
-        for j in range(len(new_idx)):
-            new_idx[j] = new_idx[j] + len_t
-        idx = idx + new_idx
-        idx_y0 = idx_y0 + [len_t]
-        len_t += len(new_t)
+    X = np.concatenate((t, Q), axis=1)
+    Y = np.copy(T).reshape(-1,1)
         
     return X, Y, idx, idx_y0

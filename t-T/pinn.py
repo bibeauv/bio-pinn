@@ -54,7 +54,7 @@ class PINeuralNet(nn.Module):
 # Full PINN to discover k
 class Curiosity():
 
-    def __init__(self, X, Y, idx, idx_y0, f_hat, learning_rate, e, c1, c2, neurons, regularization, device, prm):
+    def __init__(self, X, Y, f_hat, learning_rate, e, c1, c2, neurons, regularization, device, prm):
         
         def loss_function_ode(output, target):
             
@@ -64,13 +64,7 @@ class Curiosity():
         
         def loss_function_data(output, target):
 
-            loss = torch.mean((output[idx] - target)**2)
-
-            return loss
-        
-        def loss_function_IC(output, target):
-
-            loss = torch.mean((output[idx_y0] - target[0])**2)
+            loss = torch.mean((output - target)**2)
 
             return loss
         
@@ -85,7 +79,6 @@ class Curiosity():
 
         self.loss_function_ode = loss_function_ode
         self.loss_function_data = loss_function_data
-        self.loss_function_IC = loss_function_IC
         self.f_hat = f_hat
         self.regularization = regularization
 
