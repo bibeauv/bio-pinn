@@ -165,19 +165,19 @@ class Curiosity():
 
         T = self.z
         
-        k1 = self.PINN.A1 + self.PINN.E1 * (T - T[0])
-        k2 = self.PINN.A2 + self.PINN.E2 * (T - T[0])
-        k3 = self.PINN.A3 + self.PINN.E3 * (T - T[0])
-        k4 = self.PINN.A4 + self.PINN.E4 * (T - T[0])
-        k5 = self.PINN.A5 + self.PINN.E5 * (T - T[0])
-        k6 = self.PINN.A6 + self.PINN.E6 * (T - T[0])
+        # k1 = self.PINN.A1 + self.PINN.E1 * (T - T[0])
+        # k2 = self.PINN.A2 + self.PINN.E2 * (T - T[0])
+        # k3 = self.PINN.A3 + self.PINN.E3 * (T - T[0])
+        # k4 = self.PINN.A4 + self.PINN.E4 * (T - T[0])
+        # k5 = self.PINN.A5 + self.PINN.E5 * (T - T[0])
+        # k6 = self.PINN.A6 + self.PINN.E6 * (T - T[0])
 
-        # k1 = self.PINN.A1 * torch.exp(-self.PINN.E1 / T)
-        # k2 = self.PINN.A2 * torch.exp(-self.PINN.E2 / T)
-        # k3 = self.PINN.A3 * torch.exp(-self.PINN.E3 / T)
-        # k4 = self.PINN.A4 * torch.exp(-self.PINN.E4 / T)
-        # k5 = self.PINN.A5 * torch.exp(-self.PINN.E5 / T)
-        # k6 = self.PINN.A6 * torch.exp(-self.PINN.E6 / T)
+        k1 = self.PINN.A1 * torch.exp(-self.PINN.E1 / T)
+        k2 = self.PINN.A2 * torch.exp(-self.PINN.E2 / T)
+        k3 = self.PINN.A3 * torch.exp(-self.PINN.E3 / T)
+        k4 = self.PINN.A4 * torch.exp(-self.PINN.E4 / T)
+        k5 = self.PINN.A5 * torch.exp(-self.PINN.E5 / T)
+        k6 = self.PINN.A6 * torch.exp(-self.PINN.E6 / T)
         
         grad_cTG = autograd.grad(cTG, g, torch.ones(x.shape[0], 1).to(self.device), \
                                  retain_graph=True, create_graph=True) \

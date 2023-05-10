@@ -5,8 +5,8 @@ PATH = os.getcwd()
 best_case = 'pinn_2'
 
 os.chdir(f'{PATH}/{best_case}')
-os.system('cp pinn.py ../.')
-os.system('cp data.py ../.')
+# os.system('cp pinn.py ../.')
+# os.system('cp data.py ../.')
 
 from pinn import *
 from data import *
@@ -44,11 +44,11 @@ class parameters():
     E5 = float(model.E5.detach().numpy())
     A6 = float(model.A6.detach().numpy())
     E6 = float(model.E6.detach().numpy())
-    T = Z_train[:241].detach().numpy()
+    T = Z_train[1806:2406].detach().numpy()
     # Q = 6
     # m_Cp = 10
 prm = parameters()
-t_num, y_num = euler(y0, X_train[:241,0].detach().numpy(), prm)
+t_num, y_num = euler(y0, X_train[1806:2406,0].detach().numpy(), prm)
 
 plt.plot(X_train[idx[:12],0], Y_train[idx[:12],0], 'o', label='Experiments 6W')
 plt.plot(X_train[idx[12:27],0], Y_train[idx[12:27],0], 'o', label='Experiments 5W')
