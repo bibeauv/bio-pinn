@@ -27,7 +27,8 @@ class parameters():
     m_Cp = 10
 prm = parameters()
 
-PINN = Curiosity(X_train, Y_train, Z_train, idx, idx_y0, idx_yf, f_hat, learning_rate,
+PINN = Curiosity(X_train, Y_train, Z_train,
+                 idx, idx_y0, idx_yf, f_hat, learning_rate,
                  E, A,
                  neurons, regularization, device, prm)
 
