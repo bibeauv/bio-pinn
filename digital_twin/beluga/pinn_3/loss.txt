@@ -1,0 +1,1 @@
+Epoch 1000001 	 loss_c_data: 9.4162e-04 	 loss_c_ode: 7.2951e-09

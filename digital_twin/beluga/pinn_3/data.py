@@ -73,9 +73,9 @@ def gather_data(files, T_file):
 
         for j in range(len(new_idx)):
             new_idx[j] = new_idx[j] + len_t
-        if P == 4.0:
+        if P == 4.0 or P == 6.0:
             idx = idx + new_idx
-        if P == 5.0 or P == 6.0:
+        if P == 5.0:
             idx = idx + [new_idx[0]]
         idx_y0 = idx_y0 + [len_t]
         len_t += len(new_t)

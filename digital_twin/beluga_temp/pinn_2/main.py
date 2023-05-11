@@ -10,7 +10,7 @@ files = ['exp1_6W.csv', 'exp2_6W.csv', 'exp3_6W.csv',
 
 X, Y, Z, idx, idx_y0, idx_yf = gather_data(files, 'T_train.csv')
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 X_train, Y_train, Z_train = put_in_device(X, Y, Z, device)
 f_hat = torch.zeros(X_train.shape[0], 1).to(device)
 
@@ -20,7 +20,7 @@ E = [1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4]
 A = [1/240, 1/240, 1/240, 1/240, 1/240, 1/240]
 neurons = 64
 layers = 3
-regularization = 2
+regularization = 10
 
 class parameters():
     Q = 6
@@ -64,13 +64,13 @@ while epoch <= max_epochs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
         if epoch == 25000:
-            PINN.regularization = 20
+            PINN.regularization = 100
 
         if epoch == 50000:
-            PINN.regularization = 200
+            PINN.regularization = 1000
 
         if epoch == 75000:
-            PINN.regularization = 2000
+            PINN.regularization = 10000
 
         if epoch == 100000:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)
