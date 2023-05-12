@@ -1,0 +1,1 @@
+Epoch 75001 	 loss_c_data: 1.3485e-03 	 loss_c_ode: 8.3881e-08

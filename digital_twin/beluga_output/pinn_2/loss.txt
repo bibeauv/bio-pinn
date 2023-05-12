@@ -1,0 +1,1 @@
+Epoch 6518 	 loss_c_data: 1.4074e-03 	 loss_c_ode: 7.3235e-05 	 loss_T_data: 7.0300e-01 	 loss_T_ode: 2.5219e-02

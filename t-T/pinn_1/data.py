@@ -36,14 +36,14 @@ def put_in_device(x, y, device):
 def gather_data(files):
     
     C = read_data(files[0])
-    t = C[:,0].reshape(-1,1)
-    Q = C[:,1].reshape(-1,1)
-    T = C[:,2].reshape(-1,1)
+    t = C[:,1].reshape(-1,1)
+    Q = C[:,2].reshape(-1,1)
+    T = C[:,3].reshape(-1,1)
 
-    idx = find_idx(t, C)
-    idx_y0 = [0]
+    # idx = find_idx(t, C)
+    # idx_y0 = [0]
 
     X = np.concatenate((t, Q), axis=1)
     Y = np.copy(T).reshape(-1,1)
         
-    return X, Y, idx, idx_y0
+    return X, Y

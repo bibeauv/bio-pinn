@@ -2,7 +2,7 @@ import os
 
 PATH = os.getcwd()
 
-best_case = 'pinn_4'
+best_case = 'pinn_1-3'
 
 os.chdir(f'{PATH}/{best_case}')
 os.system('cp pinn.py ../.')
