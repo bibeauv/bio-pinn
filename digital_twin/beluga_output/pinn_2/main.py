@@ -35,7 +35,7 @@ prm = parameters()
 PINN = Curiosity(X_train, Y_train, Z_train,
                  idx, idx_y0, idx_yf, f_hat, learning_rate,
                  E, A,
-                 neurons, regularization, device, prm)
+                 neurons, regularization, penalization, device, prm)
 
 # Make all outputs positive
 for i, p in enumerate(PINN.PINN.parameters()):
