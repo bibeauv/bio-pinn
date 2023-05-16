@@ -53,6 +53,9 @@ class PINeuralNet(nn.Module):
         self.A5 = nn.Parameter(self.A5)
         self.A6 = nn.Parameter(self.A6)
 
+        self.dHrx = torch.tensor(45350., requires_grad=True).float().to(device)
+        self.dHrx = nn.Parameter(self.dHrx)
+
     def forward(self, x):
 
         if torch.is_tensor(x) != True:
@@ -74,7 +77,7 @@ class PINeuralNet(nn.Module):
 # Full PINN to discover k
 class Curiosity():
 
-    def __init__(self, X, Y, Z, idx, idx_y0, idx_yf, f_hat, learning_rate, E, A, neurons, regularization, device, prm):
+    def __init__(self, X, Y, Z, idx, idx_y0, idx_yf, f_hat, learning_rate, E, A, neurons, regularization, penalization, device, prm):
         
         def loss_function_ode(output, target):
             
@@ -116,6 +119,8 @@ class Curiosity():
         self.PINN.register_parameter('A5', self.PINN.A5)
         self.PINN.register_parameter('A6', self.PINN.A6)
 
+        self.PINN.register_parameter('dHrx', self.PINN.dHrx)
+
         self.x = X
         self.y = Y
         self.z = Z
@@ -126,6 +131,7 @@ class Curiosity():
         self.loss_function_FC = loss_function_FC
         self.f_hat = f_hat
         self.regularization = regularization
+        self.penalization = penalization
 
         self.device = device
         self.lr = learning_rate
@@ -193,7 +199,7 @@ class Curiosity():
                                                             - k5*cMG + k6*cG*cME, self.f_hat)
         self.loss_T_ode = self.loss_function_ode(self.prm.m_Cp*grad_T - 0.17571274936199188*Q \
                                                  + 0.011399226263165474*T - 0.21249239146709442 \
-                                                 + (18120*grad_cTG - 9080*grad_cDG + 36310*grad_cMG)*self.prm.V, self.f_hat)
+                                                 + self.PINN.dHrx*grad_cTG*self.prm.V, self.f_hat)
         
         self.loss_cTG_data = self.loss_function_data(cTG, y_train[:,0].reshape(-1,1))
         self.loss_cDG_data = self.loss_function_data(cDG, y_train[:,1].reshape(-1,1))
@@ -205,7 +211,7 @@ class Curiosity():
         self.loss_c_data = self.loss_cTG_data + self.loss_cDG_data + self.loss_cMG_data + self.loss_cG_data + self.loss_cME_data
         self.loss_c_ode = self.loss_cTG_ode + self.loss_cDG_ode + self.loss_cMG_ode + self.loss_cG_ode + self.loss_cME_ode
         
-        self.total_loss = self.regularization * (self.loss_c_ode + self.loss_T_ode) + 100*self.loss_c_data + self.loss_T_data
+        self.total_loss = self.regularization * (self.loss_c_ode + self.loss_T_ode) + self.penalization*self.loss_c_data + self.loss_T_data
         
         return self.total_loss
     
