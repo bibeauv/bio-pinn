@@ -1,12 +1,13 @@
 import os
+import shutil
 
 PATH = os.getcwd()
 
 best_case = 'pinn_2'
 
 os.chdir(f'{PATH}/{best_case}')
-os.system('cp pinn.py ../.')
-os.system('cp data.py ../.')
+shutil.copy(f'{PATH}/{best_case}/pinn.py', f'{PATH}/')
+shutil.copy(f'{PATH}/{best_case}/data.py', f'{PATH}/')
 
 from pinn import *
 from data import *

@@ -13,12 +13,12 @@ def EDO(y, prm, i):
     T = prm.T
     Ti = T[i]
 
-    k1 = prm.A1 + prm.E1 * (Ti - min(T))
-    k2 = prm.A2 + prm.E2 * (Ti - min(T))
-    k3 = prm.A3 + prm.E3 * (Ti - min(T))
-    k4 = prm.A4 + prm.E4 * (Ti - min(T))
-    k5 = prm.A5 + prm.E5 * (Ti - min(T))
-    k6 = prm.A6 + prm.E6 * (Ti - min(T))
+    k1 = prm.A1 + prm.E1 * (Ti - np.min(T))
+    k2 = prm.A2 + prm.E2 * (Ti - np.min(T))
+    k3 = prm.A3 + prm.E3 * (Ti - np.min(T))
+    k4 = prm.A4 + prm.E4 * (Ti - np.min(T))
+    k5 = prm.A5 + prm.E5 * (Ti - np.min(T))
+    k6 = prm.A6 + prm.E6 * (Ti - np.min(T))
 
     # k1 = prm.A1 * np.exp(-prm.E1 / Ti)
     # k2 = prm.A2 * np.exp(-prm.E2 / Ti)

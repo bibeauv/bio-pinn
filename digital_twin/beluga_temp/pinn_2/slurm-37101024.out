@@ -1,0 +1,7 @@
+srun: error: bg12203: task 0: Exited with exit code 1
+Traceback (most recent call last):
+  File "main.py", line 1, in <module>
+    from data import *
+  File "/lustre04/scratch/bibeauv/digital_twin/pinn_2/data.py", line 2, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'
