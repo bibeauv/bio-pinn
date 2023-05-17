@@ -64,6 +64,7 @@ while epoch <= max_epochs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
         if epoch == 25000:
+<<<<<<< HEAD
             PINN.regularization = 50
 
         if epoch == 50000:
@@ -71,6 +72,15 @@ while epoch <= max_epochs:
 
         if epoch == 75000:
             PINN.regularization = 5000
+=======
+            PINN.regularization = 100
+
+        if epoch == 50000:
+            PINN.regularization = 1000
+
+        if epoch == 75000:
+            PINN.regularization = 10000
+>>>>>>> 6c31261b362ab2c2f3527de7d418e5aba1cc9364
 
         if epoch == 100000:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)

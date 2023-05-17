@@ -20,7 +20,7 @@ E = [1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4]
 A = [1/240, 1/240, 1/240, 1/240, 1/240, 1/240]
 neurons = 64
 layers = 3
-regularization = 2
+regularization = 5
 
 class parameters():
     Q = 6
@@ -64,13 +64,13 @@ while epoch <= max_epochs:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-4)
 
         if epoch == 25000:
-            PINN.regularization = 20
+            PINN.regularization = 50
 
         if epoch == 50000:
-            PINN.regularization = 200
+            PINN.regularization = 500
 
         if epoch == 75000:
-            PINN.regularization = 2000
+            PINN.regularization = 5000
 
         if epoch == 100000:
             PINN.optimizer = torch.optim.Adam(PINN.params, lr=1e-5)

@@ -3,7 +3,7 @@ import shutil
 
 PATH = os.getcwd()
 
-best_case = 'pinn_2'
+best_case = 'pinn_1-3'
 
 os.chdir(f'{PATH}/{best_case}')
 shutil.copy(f'{PATH}/{best_case}/pinn.py', f'{PATH}/')
@@ -14,6 +14,7 @@ from data import *
 from numerical import *
 import torch
 import matplotlib.pyplot as plt
+import pandas as pd
 
 model = torch.load('model.pt', map_location=torch.device('cpu'))
 
@@ -50,6 +51,10 @@ class parameters():
     # m_Cp = 10
 prm = parameters()
 t_num, y_num = euler(y0, X_train[1806:2406,0].detach().numpy(), prm)
+prm.T = Z_train[723:1084].detach().numpy()
+t_num_5, y_num_5 = euler(y0, X_train[723:1084,0].detach().numpy(), prm)
+prm.T = Z_train[1806:2406].detach().numpy()
+t_num_4, y_num_4 = euler(y0, X_train[1806:2406,0].detach().numpy(), prm)
 
 plt.plot(X_train[idx[:12],0], Y_train[idx[:12],0], 'o', label='Experiments 6W')
 plt.plot(X_train[idx[12:27],0], Y_train[idx[12:27],0], 'o', label='Experiments 5W')
@@ -120,3 +125,56 @@ print(f'A5: {float(model.A5.detach().numpy())}')
 print(f'E5: {float(model.E5.detach().numpy())}')
 print(f'A6: {float(model.A6.detach().numpy())}')
 print(f'E6: {float(model.E6.detach().numpy())}')
+
+data_PINN = {}
+data_PINN['t'] = X_train[:,0].detach().numpy().flatten()
+data_PINN['Q'] = X_train[:,1].detach().numpy().flatten()
+data_PINN['TG'] = output[:,0].detach().numpy().flatten()
+data_PINN['DG'] = output[:,1].detach().numpy().flatten()
+data_PINN['MG'] = output[:,2].detach().numpy().flatten()
+data_PINN['G'] = output[:,3].detach().numpy().flatten()
+data_PINN['ME'] = output[:,4].detach().numpy().flatten()
+df_PINN = pd.DataFrame.from_dict(data_PINN)
+df_PINN.to_csv('data_PINN.csv')
+
+data_num_4 = {}
+data_num_4['t'] = t_num_4
+data_num_4['TG'] = y_num_4[:,0]
+data_num_4['DG'] = y_num_4[:,1]
+data_num_4['MG'] = y_num_4[:,2]
+data_num_4['G'] = y_num_4[:,3]
+data_num_4['ME'] = y_num_4[:,4]
+df_num_4 = pd.DataFrame.from_dict(data_num_4)
+df_num_4.to_csv('data_num_4.csv')
+
+data_num_5 = {}
+data_num_5['t'] = t_num_5
+data_num_5['TG'] = y_num_5[:,0]
+data_num_5['DG'] = y_num_5[:,1]
+data_num_5['MG'] = y_num_5[:,2]
+data_num_5['G'] = y_num_5[:,3]
+data_num_5['ME'] = y_num_5[:,4]
+df_num_5 = pd.DataFrame.from_dict(data_num_5)
+df_num_5.to_csv('data_num_5.csv')
+
+data_num_6 = {}
+data_num_6['t'] = t_num
+data_num_6['TG'] = y_num[:,0]
+data_num_6['DG'] = y_num[:,1]
+data_num_6['MG'] = y_num[:,2]
+data_num_6['G'] = y_num[:,3]
+data_num_6['ME'] = y_num[:,4]
+df_num_6 = pd.DataFrame.from_dict(data_num_6)
+df_num_6.to_csv('data_num_6.csv')
+
+data_exp = {}
+data_exp['t'] = X_train[:,0].detach().numpy().flatten()
+data_exp['Q'] = X_train[:,1].detach().numpy().flatten()
+data_exp['TG'] = Y_train[:,0].detach().numpy().flatten()
+data_exp['MG'] = Y_train[:,1].detach().numpy().flatten()
+data_exp['DG'] = Y_train[:,2].detach().numpy().flatten()
+data_exp['G'] = Y_train[:,3].detach().numpy().flatten()
+data_exp['ME'] = Y_train[:,4].detach().numpy().flatten()
+df_exp = pd.DataFrame.from_dict(data_exp)
+df_exp = df_exp[df_exp['TG'] != 0.0]
+df_exp.to_csv('data_exp.csv')

@@ -7,31 +7,7 @@ import matplotlib.pyplot as plt
 
 PATH = os.getcwd()
 
-loss_dict = {'case': [], 'loss_T_data': [], 'loss_T_ode': []}
-
-for dirpath, dirnames, filenames in os.walk(PATH):
-
-    if 'model.pt' in filenames and 'loss.txt' in filenames:
-
-        os.chdir(dirpath)
-
-        with open('loss.txt', 'r') as f:
-            lines = f.readlines()
-            line = lines[0]
-            loss_info = line.split('\t')
-            loss_T_data = float(loss_info[1].split(':')[1])
-            loss_T_ode = float(loss_info[2].split(':')[1])
-            loss_dict['loss_T_data'].append(loss_T_data)
-            loss_dict['loss_T_ode'].append(loss_T_ode)
-            loss_dict['case'].append(dirpath.split('/')[-1])
-
-loss_df = pd.DataFrame(loss_dict)
-best_loss_df = loss_df[loss_df['loss_T_ode'] == loss_df['loss_T_ode'].min()]
-best_case = best_loss_df['case'].to_string(index=False)
-
-print(loss_df)
-
-os.chdir(f'{PATH}/pinn_0')
+os.chdir(f'{PATH}/pinn_1')
 
 model = torch.load('model.pt')
 
@@ -44,7 +20,7 @@ X_train, Y_train = put_in_device(X, Y, device)
 
 output = model(X_train)
 
-y0 = np.array([33.6])
+y0 = np.array([34.2])
 class parameters():
     e = float(model.e.detach().numpy())
     c1 = float(model.c1.detach().numpy())
